@@ -107,6 +107,24 @@ img { display: block; max-width: 100%; }
 .hamburger.open span:nth-child(2) { opacity: 0; }
 .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 36px;
+  align-items: center;
+}
+
+.nav-links a {
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.8);
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: #fff; }
+.header.scrolled .nav-links a { color: var(--color-text-muted); }
+.header.scrolled .nav-links a:hover { color: var(--color-primary); }
+
+/* ===== モバイルナビ ===== */
 @media (max-width: 768px) {
   .hamburger { display: flex; }
   .nav-links {
@@ -130,31 +148,7 @@ img { display: block; max-width: 100%; }
     border-bottom: 1px solid var(--color-border);
   }
   .nav-links li:last-child a { border-bottom: none; }
-  .nav-cta {
-    background: var(--color-accent) !important;
-    border-radius: var(--radius) !important;
-    padding: 10px 16px !important;
-    text-align: center;
-    margin-top: 8px;
-  }
 }
-
-.nav-links {
-  list-style: none;
-  display: flex;
-  gap: 36px;
-  align-items: center;
-}
-
-.nav-links a {
-  font-size: 0.82rem;
-  letter-spacing: 0.08em;
-  color: rgba(255,255,255,0.8);
-  transition: color 0.2s;
-}
-.nav-links a:hover { color: #fff; }
-.header.scrolled .nav-links a { color: var(--color-text-muted); }
-.header.scrolled .nav-links a:hover { color: var(--color-primary); }
 
 .nav-cta {
   background: var(--color-accent) !important;
