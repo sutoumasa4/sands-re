@@ -1,16 +1,25 @@
 // ハンバーガーメニュー
 const hamburger = document.getElementById('hamburger');
 const navLinks = document.querySelector('.nav-links');
+
+function closeNav() {
+  if (hamburger) hamburger.classList.remove('open');
+  if (navLinks) navLinks.classList.remove('open');
+}
+
 if (hamburger && navLinks) {
-  hamburger.addEventListener('click', () => {
+  hamburger.addEventListener('click', (e) => {
+    e.stopPropagation();
     hamburger.classList.toggle('open');
     navLinks.classList.toggle('open');
   });
   document.querySelectorAll('.nav-links a').forEach(link => {
-    link.addEventListener('click', () => {
-      hamburger.classList.remove('open');
-      navLinks.classList.remove('open');
-    });
+    link.addEventListener('click', closeNav);
+  });
+  document.addEventListener('click', (e) => {
+    if (!hamburger.contains(e.target) && !navLinks.contains(e.target)) {
+      closeNav();
+    }
   });
 }
 
