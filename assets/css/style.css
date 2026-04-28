@@ -159,6 +159,14 @@ body { cursor: pointer; } /* iOS Safari click fix */
     border-bottom: 1px solid var(--color-border);
   }
   .nav-links li:last-child a { border-bottom: none; }
+  .nav-cta {
+    padding: 14px 20px !important;
+    font-size: 1rem !important;
+    letter-spacing: 0.03em !important;
+    border-radius: 8px !important;
+    text-align: center;
+    margin-top: 4px;
+  }
 }
 
 .nav-cta {
