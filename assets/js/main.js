@@ -1,3 +1,19 @@
+// ハンバーガーメニュー
+const hamburger = document.getElementById('hamburger');
+const navLinks = document.querySelector('.nav-links');
+if (hamburger && navLinks) {
+  hamburger.addEventListener('click', () => {
+    hamburger.classList.toggle('open');
+    navLinks.classList.toggle('open');
+  });
+  document.querySelectorAll('.nav-links a').forEach(link => {
+    link.addEventListener('click', () => {
+      hamburger.classList.remove('open');
+      navLinks.classList.remove('open');
+    });
+  });
+}
+
 // ナビ: スクロールで背景を切り替え
 const header = document.getElementById('header');
 window.addEventListener('scroll', () => {
