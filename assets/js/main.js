@@ -2,40 +2,39 @@
 const hamburger = document.getElementById('hamburger');
 const navLinks = document.querySelector('.nav-links');
 
-function closeNav() {
-  if (hamburger) hamburger.classList.remove('open');
-  if (navLinks) navLinks.classList.remove('open');
-}
-
-function toggleNav(e) {
-  e.stopPropagation();
-  hamburger.classList.toggle('open');
-  navLinks.classList.toggle('open');
-}
-
 if (hamburger && navLinks) {
-  hamburger.addEventListener('click', toggleNav);
-  hamburger.addEventListener('touchend', function(e) {
+  // タッチ操作（iOS Safari）
+  hamburger.addEventListener('touchstart', function(e) {
     e.preventDefault();
-    toggleNav(e);
+    e.stopPropagation();
+    hamburger.classList.toggle('open');
+    navLinks.classList.toggle('open');
+  }, { passive: false });
+
+  // デスクトップ用クリック
+  hamburger.addEventListener('click', function(e) {
+    e.stopPropagation();
+    hamburger.classList.toggle('open');
+    navLinks.classList.toggle('open');
   });
 
+  // リンクをタップしたら閉じる
   navLinks.querySelectorAll('a').forEach(link => {
-    link.addEventListener('click', closeNav);
-    link.addEventListener('touchend', closeNav);
+    link.addEventListener('click', function() {
+      hamburger.classList.remove('open');
+      navLinks.classList.remove('open');
+    });
   });
 
-  // 外側タップで閉じる（iOS対応）
-  document.addEventListener('touchstart', (e) => {
-    if (!hamburger.contains(e.target) && !navLinks.contains(e.target)) {
-      closeNav();
+  // 外側タップで閉じる
+  document.addEventListener('touchstart', function(e) {
+    if (navLinks.classList.contains('open') &&
+        !hamburger.contains(e.target) &&
+        !navLinks.contains(e.target)) {
+      hamburger.classList.remove('open');
+      navLinks.classList.remove('open');
     }
-  });
-  document.addEventListener('click', (e) => {
-    if (!hamburger.contains(e.target) && !navLinks.contains(e.target)) {
-      closeNav();
-    }
-  });
+  }, { passive: true });
 }
 
 // ナビ: スクロールで背景を切り替え
