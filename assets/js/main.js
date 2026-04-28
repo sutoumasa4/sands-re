@@ -13,11 +13,13 @@ if (navToggle && navLabel) {
   });
 }
 
-// ナビ: スクロールで背景を切り替え
+// ナビ: スクロールで背景を切り替え（トップページのみ）
 const header = document.getElementById('header');
-window.addEventListener('scroll', () => {
-  header.classList.toggle('scrolled', window.scrollY > 60);
-}, { passive: true });
+if (header && !document.body.classList.contains('subpage')) {
+  window.addEventListener('scroll', () => {
+    header.classList.toggle('scrolled', window.scrollY > 60);
+  }, { passive: true });
+}
 
 // スクロールアニメーション (Intersection Observer)
 const observer = new IntersectionObserver((entries) => {

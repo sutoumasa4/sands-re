@@ -470,14 +470,14 @@ body { cursor: pointer; } /* iOS Safari click fix */
   align-items: start;
 }
 
-@media (max-width: 900px) {
-  .philosophy-layout { grid-template-columns: 1fr; gap: 48px; }
-  .philosophy-sticky { position: static; top: auto; }
-}
-
 .philosophy-sticky {
   position: sticky;
   top: 96px;
+}
+
+@media (max-width: 900px) {
+  .philosophy-layout { grid-template-columns: 1fr; gap: 48px; }
+  .philosophy-sticky { position: static; top: auto; }
 }
 
 .philosophy-list {
