@@ -1,6 +1,13 @@
-// リンクをタップしたらチェックボックスをオフにして閉じる
+// ハンバーガーメニュー（iOS Safari対応）
 const navToggle = document.getElementById('nav-toggle');
-if (navToggle) {
+const navLabel = document.querySelector('label[for="nav-toggle"]');
+if (navToggle && navLabel) {
+  // iOSでlabelのtoggleが不安定なのでJSで直接制御
+  navLabel.addEventListener('click', function(e) {
+    e.preventDefault();
+    navToggle.checked = !navToggle.checked;
+  });
+  // リンクをタップしたら閉じる
   document.querySelectorAll('.nav-links a').forEach(link => {
     link.addEventListener('click', () => { navToggle.checked = false; });
   });

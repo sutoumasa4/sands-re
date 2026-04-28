@@ -85,7 +85,15 @@ body { cursor: pointer; } /* iOS Safari click fix */
 .header.scrolled .nav-logo { color: var(--color-primary); }
 
 /* ===== ハンバーガーボタン ===== */
-.nav-toggle { display: none; }
+.nav-toggle {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  pointer-events: none;
+}
 
 .hamburger {
   display: none;
