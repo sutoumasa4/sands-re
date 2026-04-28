@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>資料ダウンロード | 合同会社SANDS</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    body { background: var(--color-bg-light); }
+    .pw-wrap {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px;
+    }
+    .pw-box {
+      background: #fff;
+      border-radius: 8px;
+      padding: 48px 40px;
+      max-width: 480px;
+      width: 100%;
+      box-shadow: 0 2px 24px rgba(0,0,0,0.08);
+    }
+    .pw-logo {
+      font-family: var(--font-serif);
+      font-size: 1.2rem;
+      letter-spacing: 0.15em;
+      color: var(--color-primary);
+      margin-bottom: 8px;
+    }
+    .pw-title {
+      font-family: var(--font-serif);
+      font-size: 1.3rem;
+      font-weight: 300;
+      color: var(--color-primary);
+      margin-bottom: 8px;
+    }
+    .pw-desc {
+      font-size: 0.85rem;
+      color: var(--color-text-light);
+      margin-bottom: 32px;
+      line-height: 1.8;
+    }
+    .pw-input-wrap { position: relative; margin-bottom: 16px; }
+    .pw-input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid rgba(0,0,0,0.15);
+      border-radius: var(--radius);
+      font-size: 1rem;
+      font-family: var(--font-sans);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .pw-input:focus { border-color: var(--color-accent); }
+    .pw-btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--color-accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 0.95rem;
+      font-family: var(--font-sans);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .pw-btn:hover { background: var(--color-accent-light); }
+    .pw-error {
+      display: none;
+      font-size: 0.85rem;
+      color: #c0392b;
+      margin-top: 12px;
+    }
+    .pw-note {
+      font-size: 0.8rem;
+      color: #aaa;
+      margin-top: 24px;
+      line-height: 1.7;
+    }
+    /* 資料一覧（認証後） */
+    .docs-section { display: none; }
+    .docs-list { margin-top: 24px; display: flex; flex-direction: column; gap: 12px; }
+    .docs-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: var(--radius);
+      transition: background 0.2s;
+    }
+    .docs-item:hover { background: var(--color-bg-light); }
+    .docs-item-name { font-size: 0.9rem; font-weight: 500; color: var(--color-primary); }
+    .docs-item-desc { font-size: 0.8rem; color: #999; margin-top: 2px; }
+    .docs-download {
+      font-size: 0.8rem;
+      color: var(--color-accent);
+      letter-spacing: 0.05em;
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 32px;
+      font-size: 0.85rem;
+      color: var(--color-text-light);
+    }
+    .back-link:hover { color: var(--color-primary); }
+    /* 代表者プロフィール */
+    .founder-section {
+      margin-top: 32px;
+      padding-top: 32px;
+      border-top: 1px solid rgba(0,0,0,0.08);
+    }
+    .founder-section-label {
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      color: var(--color-text-light);
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .founder-section-title {
+      font-family: var(--font-serif);
+      font-size: 1.1rem;
+      font-weight: 300;
+      color: var(--color-primary);
+      margin-bottom: 20px;
+    }
+    .founder-name-doc {
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--color-primary);
+      margin-bottom: 4px;
+    }
+    .founder-role-doc {
+      font-size: 0.8rem;
+      color: var(--color-text-light);
+      margin-bottom: 16px;
+    }
+    .founder-body-doc {
+      font-size: 0.875rem;
+      color: var(--color-text);
+      line-height: 1.85;
+      margin-bottom: 10px;
+    }
+    .founder-note-doc {
+      font-size: 0.8rem;
+      color: var(--color-text-light);
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(0,0,0,0.06);
+      line-height: 1.8;
+    }
+  </style>
+</head>
+<body>
+  <div class="pw-wrap">
+    <!-- 認証フォーム -->
+    <div class="pw-box" id="authBox">
+      <p class="pw-logo">SANDS</p>
+      <h1 class="pw-title">関係者専用ページ</h1>
+      <p class="pw-desc">パスワードをお持ちの方のみアクセスできます。</p>
+
+      <div class="pw-input-wrap">
+        <input type="password" class="pw-input" id="passwordInput" placeholder="パスワードを入力" autocomplete="off">
+      </div>
+      <button class="pw-btn" id="submitBtn" onclick="checkPassword()">確認する</button>
+      <p class="pw-error" id="errorMsg">パスワードが正しくありません。</p>
+      <p class="pw-note">パスワードをお持ちでない方は、<a href="../contact.html" style="color: var(--color-accent);">お問い合わせ</a>よりご連絡ください。</p>
+      <a href="../index.html" class="back-link" style="margin-top: 20px;">← SANDSトップページへ</a>
+    </div>
+
+    <!-- 認証後：資料一覧 -->
+    <div class="pw-box docs-section" id="docsBox" style="max-width: 600px;">
+      <p class="pw-logo">SANDS</p>
+      <h1 class="pw-title">資料ダウンロード</h1>
+      <p class="pw-desc">以下の資料をダウンロードいただけます。</p>
+
+      <div class="docs-list">
+        <a class="docs-item" href="files/sands-company-profile.pdf" download>
+          <div>
+            <p class="docs-item-name">法人プロフィール</p>
+            <p class="docs-item-desc">事業概況・経営方針・計算書類</p>
+          </div>
+          <span class="docs-download">↓ PDF</span>
+        </a>
+        <a class="docs-item" href="files/sands-property-profile.pdf" download>
+          <div>
+            <p class="docs-item-name">物件プロフィール</p>
+            <p class="docs-item-desc">保有5棟のレントロール・概要</p>
+          </div>
+          <span class="docs-download">↓ PDF</span>
+        </a>
+        <a class="docs-item" href="files/sands-personal-profile.pdf" download>
+          <div>
+            <p class="docs-item-name">個人プロフィール</p>
+            <p class="docs-item-desc">代表者の経歴・資産状況</p>
+          </div>
+          <span class="docs-download">↓ PDF</span>
+        </a>
+      </div>
+
+      <a href="../index.html" class="back-link">← SANDSトップページへ</a>
+    </div>
+  </div>
+
+  <script>
+    // パスワードはここで設定（変更する場合はこの文字列を書き換えるだけ）
+    const CORRECT_PASSWORD = 'sands2026';
+
+    function checkPassword() {
+      const input = document.getElementById('passwordInput').value;
+      if (input === CORRECT_PASSWORD) {
+        document.getElementById('authBox').style.display = 'none';
+        document.getElementById('docsBox').style.display = 'block';
+      } else {
+        document.getElementById('errorMsg').style.display = 'block';
+        document.getElementById('passwordInput').value = '';
+        document.getElementById('passwordInput').focus();
+      }
+    }
+
+    document.getElementById('passwordInput').addEventListener('keypress', e => {
+      if (e.key === 'Enter') checkPassword();
+    });
+  </script>
+</body>
+</html>
