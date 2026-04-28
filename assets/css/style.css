@@ -85,6 +85,8 @@ body { cursor: pointer; } /* iOS Safari click fix */
 .header.scrolled .nav-logo { color: var(--color-primary); }
 
 /* ===== ハンバーガーボタン ===== */
+.nav-toggle { display: none; }
+
 .hamburger {
   display: none;
   flex-direction: column;
@@ -104,9 +106,6 @@ body { cursor: pointer; } /* iOS Safari click fix */
   transition: all 0.25s;
 }
 .header.scrolled .hamburger span { background: var(--color-primary); }
-.hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
-.hamburger.open span:nth-child(2) { opacity: 0; }
-.hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
 .nav-links {
   list-style: none;
@@ -140,7 +139,10 @@ body { cursor: pointer; } /* iOS Safari click fix */
     box-shadow: 0 8px 24px rgba(0,0,0,0.1);
     z-index: 99;
   }
-  .nav-links.open { display: flex; }
+  .nav-toggle:checked ~ .nav-links { display: flex; }
+  .nav-toggle:checked ~ .hamburger span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .nav-toggle:checked ~ .hamburger span:nth-child(2) { opacity: 0; }
+  .nav-toggle:checked ~ .hamburger span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
   .nav-links li a {
     color: var(--color-text) !important;
     font-size: 1rem !important;
