@@ -35,6 +35,7 @@ body {
 
 a { color: inherit; text-decoration: none; }
 img { display: block; max-width: 100%; }
+body { cursor: pointer; } /* iOS Safari click fix */
 
 /* ===== スクロールアニメーション ===== */
 .reveal {
