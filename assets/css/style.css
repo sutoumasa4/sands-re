@@ -714,6 +714,9 @@ body { cursor: pointer; } /* iOS Safari click fix */
 
 .nav-links-dark a { color: var(--color-text-muted) !important; }
 .nav-links-dark a:hover { color: var(--color-primary) !important; }
+.nav-links-dark .nav-cta,
+.nav-links-dark .nav-cta:hover { color: #fff !important; background: var(--color-accent) !important; }
+.nav-links-dark .nav-cta:hover { background: var(--color-accent-light) !important; }
 .nav-active { color: var(--color-accent) !important; font-weight: 500; }
 
 /* ページヘッダー */
