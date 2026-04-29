@@ -8,54 +8,58 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@300;400&display=swap" rel="stylesheet">
   <style>
-    body { background: var(--color-bg-light); }
-    .pw-wrap {
-      min-height: 100vh;
+    .docs-wrap {
+      background: var(--color-bg-light);
+      min-height: 60vh;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
-      padding: 40px 24px;
+      padding: 64px 24px 80px;
     }
-    .pw-box {
+    .docs-box {
       background: #fff;
       border-radius: 8px;
       padding: 48px 40px;
-      max-width: 480px;
+      max-width: 560px;
       width: 100%;
-      box-shadow: 0 2px 24px rgba(0,0,0,0.08);
+      box-shadow: 0 2px 32px rgba(0,0,0,0.08);
     }
-    .pw-logo {
-      font-family: var(--font-serif);
-      font-size: 1.2rem;
-      letter-spacing: 0.15em;
-      color: var(--color-primary);
+    .docs-box-label {
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      color: var(--color-accent);
+      text-transform: uppercase;
       margin-bottom: 8px;
     }
-    .pw-title {
+    .docs-box-title {
       font-family: var(--font-serif);
-      font-size: 1.3rem;
+      font-size: 1.4rem;
       font-weight: 300;
       color: var(--color-primary);
       margin-bottom: 8px;
     }
-    .pw-desc {
-      font-size: 0.85rem;
+    .docs-box-desc {
+      font-size: 0.875rem;
       color: var(--color-text-light);
       margin-bottom: 32px;
       line-height: 1.8;
     }
+    /* 認証フォーム */
     .pw-input-wrap { position: relative; margin-bottom: 16px; }
     .pw-input {
       width: 100%;
       padding: 14px 16px;
-      border: 1px solid rgba(0,0,0,0.15);
+      border: 1px solid rgba(0,0,0,0.18);
       border-radius: var(--radius);
       font-size: 1rem;
       font-family: var(--font-sans);
+      color: var(--color-primary);
+      background: #faf8f4;
       outline: none;
       transition: border-color 0.2s;
+      box-sizing: border-box;
     }
-    .pw-input:focus { border-color: var(--color-accent); }
+    .pw-input:focus { border-color: var(--color-accent); background: #fff; }
     .pw-btn {
       width: 100%;
       padding: 14px;
@@ -67,6 +71,7 @@
       font-family: var(--font-sans);
       cursor: pointer;
       transition: background 0.2s;
+      letter-spacing: 0.05em;
     }
     .pw-btn:hover { background: var(--color-accent-light); }
     .pw-error {
@@ -76,112 +81,102 @@
       margin-top: 12px;
     }
     .pw-note {
-      font-size: 0.8rem;
-      color: #aaa;
+      font-size: 0.82rem;
+      color: var(--color-text-light);
       margin-top: 24px;
-      line-height: 1.7;
+      line-height: 1.8;
     }
+    .pw-note a { color: var(--color-accent); }
     /* 資料一覧（認証後） */
     .docs-section { display: none; }
-    .docs-list { margin-top: 24px; display: flex; flex-direction: column; gap: 12px; }
+    .docs-list { margin-top: 24px; display: flex; flex-direction: column; gap: 10px; }
     .docs-item {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 16px 20px;
-      border: 1px solid rgba(0,0,0,0.08);
+      padding: 18px 20px;
+      border: 1px solid rgba(0,0,0,0.1);
       border-radius: var(--radius);
-      transition: background 0.2s;
+      background: #faf8f4;
+      transition: background 0.2s, border-color 0.2s;
+      text-decoration: none;
     }
-    .docs-item:hover { background: var(--color-bg-light); }
-    .docs-item-name { font-size: 0.9rem; font-weight: 500; color: var(--color-primary); }
-    .docs-item-desc { font-size: 0.8rem; color: #999; margin-top: 2px; }
+    .docs-item:hover { background: #f0ebe0; border-color: rgba(0,0,0,0.15); }
+    .docs-item-name { font-size: 0.92rem; font-weight: 500; color: var(--color-primary); }
+    .docs-item-desc { font-size: 0.8rem; color: var(--color-text-light); margin-top: 3px; }
+    .docs-updated { font-size: 0.75rem; color: var(--color-accent); }
     .docs-download {
-      font-size: 0.8rem;
+      font-size: 0.82rem;
+      font-weight: 500;
       color: var(--color-accent);
       letter-spacing: 0.05em;
-    }
-    .docs-updated {
-      font-size: 0.72rem;
-      color: var(--color-accent);
-      letter-spacing: 0.05em;
+      white-space: nowrap;
+      margin-left: 16px;
     }
     .back-link {
       display: inline-block;
       margin-top: 32px;
       font-size: 0.85rem;
       color: var(--color-text-light);
+      text-decoration: none;
     }
     .back-link:hover { color: var(--color-primary); }
-    /* 代表者プロフィール */
-    .founder-section {
-      margin-top: 32px;
-      padding-top: 32px;
-      border-top: 1px solid rgba(0,0,0,0.08);
-    }
-    .founder-section-label {
-      font-size: 0.75rem;
-      letter-spacing: 0.12em;
-      color: var(--color-text-light);
-      text-transform: uppercase;
-      margin-bottom: 12px;
-    }
-    .founder-section-title {
-      font-family: var(--font-serif);
-      font-size: 1.1rem;
-      font-weight: 300;
-      color: var(--color-primary);
-      margin-bottom: 20px;
-    }
-    .founder-name-doc {
-      font-size: 1rem;
-      font-weight: 500;
-      color: var(--color-primary);
-      margin-bottom: 4px;
-    }
-    .founder-role-doc {
-      font-size: 0.8rem;
-      color: var(--color-text-light);
-      margin-bottom: 16px;
-    }
-    .founder-body-doc {
-      font-size: 0.875rem;
-      color: var(--color-text);
-      line-height: 1.85;
-      margin-bottom: 10px;
-    }
-    .founder-note-doc {
-      font-size: 0.8rem;
-      color: var(--color-text-light);
-      margin-top: 16px;
-      padding-top: 16px;
-      border-top: 1px solid rgba(0,0,0,0.06);
-      line-height: 1.8;
+    @media (max-width: 600px) {
+      .docs-box { padding: 32px 24px; }
     }
   </style>
 </head>
-<body>
-  <div class="pw-wrap">
+<body class="subpage">
+
+  <header class="header scrolled" id="header">
+    <nav class="nav">
+      <a href="../index.html" class="nav-logo" style="color: var(--color-primary);">SANDS</a>
+      <input type="checkbox" id="nav-toggle" class="nav-toggle">
+      <label for="nav-toggle" class="hamburger" aria-label="メニュー"><span></span><span></span><span></span></label>
+      <ul class="nav-links nav-links-dark">
+        <li><a href="../index.html#mission">理念</a></li>
+        <li><a href="../index.html#philosophy">経営姿勢</a></li>
+        <li><a href="../news.html">ニュース</a></li>
+        <li><a href="../company.html">会社情報</a></li>
+        <li><a href="../contact.html">お問い合わせ</a></li>
+        <li><a href="index.html" class="nav-cta nav-active">資料ダウンロード</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- ページヘッダー -->
+  <section class="page-hero page-hero-dark page-hero-photo" style="background-image: url('https://images.unsplash.com/photo-1568992688065-536aad8a12f6?auto=format&fit=crop&w=1600&q=80'); background-position: center 40%;">
+    <div class="page-hero-overlay"></div>
+    <div class="container" style="position:relative;z-index:1;">
+      <p class="section-eyebrow" style="color:var(--color-accent-light);">Documents</p>
+      <h1 class="page-hero-title">資料ダウンロード</h1>
+      <p class="page-hero-lead">関係者の方向けに、法人・物件・個人プロフィールをご用意しています。</p>
+    </div>
+  </section>
+
+  <!-- 認証＆資料エリア -->
+  <div class="docs-wrap">
+
     <!-- 認証フォーム -->
-    <div class="pw-box" id="authBox">
-      <p class="pw-logo">SANDS</p>
-      <h1 class="pw-title">関係者専用ページ</h1>
-      <p class="pw-desc">パスワードをお持ちの方のみアクセスできます。</p>
+    <div class="docs-box" id="authBox">
+      <p class="docs-box-label">Restricted Access</p>
+      <h2 class="docs-box-title">関係者専用ページ</h2>
+      <p class="docs-box-desc">パスワードをお持ちの方のみアクセスできます。<br>パスワードは担当者よりご案内しております。</p>
 
       <div class="pw-input-wrap">
         <input type="password" class="pw-input" id="passwordInput" placeholder="パスワードを入力" autocomplete="off">
       </div>
       <button class="pw-btn" id="submitBtn" onclick="checkPassword()">確認する</button>
       <p class="pw-error" id="errorMsg">パスワードが正しくありません。</p>
-      <p class="pw-note">パスワードをお持ちでない方は、<a href="../contact.html" style="color: var(--color-accent);">お問い合わせ</a>よりご連絡ください。</p>
-      <a href="../index.html" class="back-link" style="margin-top: 20px;">← SANDSトップページへ</a>
+      <p class="pw-note">パスワードをお持ちでない方は、<a href="../contact.html">お問い合わせ</a>よりご連絡ください。</p>
+      <a href="../index.html" class="back-link">← SANDSトップページへ</a>
     </div>
 
     <!-- 認証後：資料一覧 -->
-    <div class="pw-box docs-section" id="docsBox" style="max-width: 600px;">
-      <p class="pw-logo">SANDS</p>
-      <h1 class="pw-title">資料ダウンロード</h1>
-      <p class="pw-desc">以下の資料をダウンロードいただけます。</p>
+    <div class="docs-box docs-section" id="docsBox" style="max-width: 560px;">
+      <p class="docs-box-label">Documents</p>
+      <h2 class="docs-box-title">資料ダウンロード</h2>
+      <p class="docs-box-desc">以下の資料をダウンロードいただけます。</p>
 
       <div class="docs-list">
         <a class="docs-item" href="files/sands-company-profile.pdf" download>
@@ -209,10 +204,29 @@
 
       <a href="../index.html" class="back-link">← SANDSトップページへ</a>
     </div>
+
   </div>
 
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <p class="footer-logo">SANDS</p>
+        <p class="footer-tagline">Sustainable AND Smile</p>
+      </div>
+      <nav class="footer-nav">
+        <a href="../index.html#mission">理念</a>
+        <a href="../index.html#philosophy">経営姿勢</a>
+        <a href="../news.html">ニュース</a>
+        <a href="../company.html">会社情報</a>
+        <a href="../contact.html">お問い合わせ</a>
+        <a href="index.html">資料ダウンロード</a>
+      </nav>
+      <p class="footer-copy">&copy; 2022 合同会社SANDS All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="../assets/js/main.js"></script>
   <script>
-    // パスワードはここで設定（変更する場合はこの文字列を書き換えるだけ）
     const CORRECT_PASSWORD = 'sands2026';
 
     function checkPassword() {
