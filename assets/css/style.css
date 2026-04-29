@@ -3,15 +3,15 @@
    =========================== */
 
 :root {
-  --color-primary: #0d0d0d;
-  --color-accent: #2d6a4f;
-  --color-accent-light: #52b788;
-  --color-accent-glow: rgba(82, 183, 136, 0.15);
-  --color-text: #1a1a1a;
-  --color-text-muted: #888;
-  --color-bg: #fff;
-  --color-bg-dark: #0d0d0d;
-  --color-bg-mid: #111;
+  --color-primary: #1e1a14;
+  --color-accent: #5c7a46;
+  --color-accent-light: #7fa85e;
+  --color-accent-glow: rgba(92, 122, 70, 0.15);
+  --color-text: #1e1a14;
+  --color-text-muted: #7a7268;
+  --color-bg: #faf8f4;
+  --color-bg-dark: #1e1a14;
+  --color-bg-mid: #2a2318;
   --color-border: rgba(0,0,0,0.08);
   --font-sans: 'Noto Sans JP', sans-serif;
   --font-serif: 'Noto Serif JP', serif;
@@ -197,8 +197,8 @@ body { cursor: pointer; } /* iOS Safari click fix */
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse 80% 60% at 70% 50%, rgba(45,106,79,0.25) 0%, transparent 60%),
-    radial-gradient(ellipse 40% 40% at 20% 80%, rgba(45,106,79,0.1) 0%, transparent 50%);
+    radial-gradient(ellipse 80% 60% at 70% 50%, rgba(92,122,70,0.3) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 20% 80%, rgba(160,120,60,0.15) 0%, transparent 50%);
 }
 
 .hero-inner {
@@ -353,7 +353,7 @@ body { cursor: pointer; } /* iOS Safari click fix */
 /* ===== セクション共通 ===== */
 .section { padding: 112px 32px; }
 .section-white { background: var(--color-bg); }
-.section-off { background: #f7f7f5; }
+.section-off { background: #f0ebe0; }
 .section-dark { background: var(--color-bg-dark); }
 
 .container { max-width: var(--max-width); margin: 0 auto; }
