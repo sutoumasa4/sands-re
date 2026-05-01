@@ -989,6 +989,34 @@ body { cursor: pointer; } /* iOS Safari click fix */
   color: var(--color-text-muted);
   border-color: var(--color-text-muted);
 }
+.news-item-has-desc { align-items: flex-start; }
+.news-desc {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+  line-height: 1.75;
+  margin-top: 4px;
+}
+
+/* ===== 沿革（会社情報ページ） ===== */
+.history-list { display: flex; flex-direction: column; margin-top: 8px; }
+.history-item {
+  display: flex;
+  align-items: baseline;
+  gap: 28px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+.history-item:first-child { border-top: 1px solid var(--color-border); }
+.history-date {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+  letter-spacing: 0.06em;
+  flex-shrink: 0;
+  min-width: 88px;
+}
+.history-body { font-size: 0.95rem; color: var(--color-text); line-height: 1.7; }
+.history-item-latest .history-date,
+.history-item-latest .history-body { color: var(--color-accent); font-weight: 500; }
 .news-title {
   font-size: 0.95rem;
   color: var(--color-text);
