@@ -344,8 +344,10 @@ document.addEventListener('DOMContentLoaded', function() {
     if (_propId) {
         document.getElementById('propAllView').style.display  = 'none';
         document.getElementById('propSingleView').style.display = 'block';
-        document.getElementById('navAll').style.display    = 'none';
-        document.getElementById('navSingle').style.display = 'flex';
+        const navAll = document.getElementById('navAll');
+        const navSingle = document.getElementById('navSingle');
+        if (navAll) navAll.style.display = 'none';
+        if (navSingle) navSingle.style.display = 'flex';
         renderSinglePropView(_propId);
         renderSingleOccupancyChart(_propId);
         renderRoomHeatmap(_propId);
