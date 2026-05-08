@@ -659,11 +659,14 @@ body { cursor: pointer; } /* iOS Safari click fix */
 
 .footer-brand {}
 .footer-logo {
-  font-family: var(--font-serif);
+  font-family: 'Inter', sans-serif;
   font-size: 1.3rem;
-  color: #fff;
-  letter-spacing: 0.2em;
+  font-weight: 500;
+  color: #F5F3EE;
+  letter-spacing: 0.18em;
   margin-bottom: 4px;
+  cursor: pointer;
+  user-select: none;
 }
 .footer-tagline {
   font-size: 0.72rem;
