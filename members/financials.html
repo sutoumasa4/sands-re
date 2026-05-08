@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SANDS 財務ダッシュボード — 財務・借入</title>
+    <link rel="stylesheet" href="sands-style.css">
+    <style>
+        .fy-tabbar-fin { display:flex; background:#1a3d6e; border-bottom:3px solid #0e2548; overflow-x:auto; scrollbar-width:none; position:sticky; top:48px; z-index:150 }
+        .fy-tabbar-fin::-webkit-scrollbar { display:none }
+        .fy-tab-fin { display:flex; flex-direction:column; align-items:center; padding:10px 18px; cursor:pointer; color:rgba(255,255,255,0.6); font-size:13px; font-weight:600; border-right:1px solid rgba(255,255,255,0.1); white-space:nowrap; transition:all 0.15s; text-decoration:none; min-width:80px; position:relative }
+        .fy-tab-fin:hover { background:rgba(255,255,255,0.08); color:#fff }
+        .fy-tab-fin.active { background:#fff; color:#1a3d6e; border-bottom:3px solid #1a3d6e; margin-bottom:-3px }
+        .fy-tab-fin .fy-sub { font-size:9px; font-weight:400; margin-top:2px; opacity:0.75 }
+        .fy-tab-fin.active .fy-sub { opacity:0.6; color:#64748b }
+        .fy-tab-fin.confirmed::after { content:'確定'; position:absolute; top:4px; right:3px; font-size:7px; background:#27ae60; color:#fff; border-radius:2px; padding:1px 3px }
+        /* FYタブ フローティングドロップダウン（overflow回避のため body直下に配置） */
+        #fyFloatMenu { display:none; position:fixed; background:#fff; border:1px solid #e2e8f0; border-top:3px solid #e8a020; border-radius:0 0 8px 8px; box-shadow:0 8px 24px rgba(0,0,0,0.15); min-width:180px; z-index:500 }
+        #fyFloatMenu a { display:block; padding:11px 18px; font-size:13px; font-weight:500; color:#1e293b; text-decoration:none; border-bottom:1px solid #f0f4f8; transition:all 0.12s }
+        #fyFloatMenu a:last-child { border-bottom:none }
+        #fyFloatMenu a:hover { background:#f0f4ff; color:#1a3d6e; padding-left:24px }
+        .snap-kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:16px }
+        @media(max-width:800px){ .snap-kpi-grid { grid-template-columns:repeat(2,1fr) } }
+        .snap-kpi { background:#fff; border:1px solid #e5e7eb; border-radius:10px; padding:12px 14px }
+        .snap-kpi-label { font-size:10px; color:#64748b; font-weight:700 }
+        .snap-kpi-value { font-size:20px; font-weight:800; color:#1a3d6e; margin:3px 0 2px }
+        .snap-kpi-sub { font-size:10px; color:#94a3b8 }
+        /* Trend table (long-period summary) */
+        .trend-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .trend-table th { background: #f8fafc; color: #64748b; font-weight: 700; text-align: left; padding: 7px 10px; border-bottom: 1px solid #e5e7eb; font-size: 10px; text-transform: uppercase; white-space: nowrap; }
+        .trend-table td { padding: 8px 10px; border-bottom: 1px solid #e5e7eb; }
+        .trend-table tr:last-child td { border-bottom: none; }
+        .trend-table .fy25 { background: #f0f8ff; font-weight: 700; }
+        .trend-table .proj { color: #64748b; font-style: italic; }
+        .trend-table .se   { background: #dbeafe !important; color: #1a3d6e; font-weight: 700; font-style: normal; }
+        .trend-table th.se { background: #bfdbfe; color: #1a3d6e; font-weight: 700; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="header-brand">
+        <div class="header-logo">S</div>
+        <div class="header-title">
+            <h1>SANDS 財務ダッシュボード</h1>
+            <p>合同会社SANDS ｜ 資産管理のすべて ｜ 内部管理資料</p>
+        </div>
+    </div>
+    <div class="header-meta">
+        <strong>基準日：2026年3月31日（FY25確定）</strong>
+        <span>更新日：2026-05-02</span>
+    </div>
+</div>
+
+<div class="page-nav">
+    <div class="pnav-item">
+        <a href="dashboard.html" class="pnav-link">🏠 ホーム</a>
+    </div>
+    <div class="pnav-item">
+        <a href="financials.html" class="pnav-link active">📋 財務・借入</a>
+    </div>
+    <div class="pnav-item">
+        <a href="monthly.html?fy=26" class="pnav-link">📅 月次トラッカー</a>
+    </div>
+    <div class="pnav-item">
+        <a href="properties-detail.html" class="pnav-link">🏘️ 物件管理 <span class="pnav-arrow">▾</span></a>
+        <div class="pnav-dropdown">
+            <a href="properties-detail.html#sec-property">📦 物件カード</a>
+            <a href="properties-detail.html#sec-rentroll">📄 レントロール</a>
+            <a href="properties-detail.html#sec-rent">💰 賃料集計</a>
+        </div>
+    </div>
+    <div class="pnav-item">
+        <a href="assets.html" class="pnav-link">📉 資産管理 <span class="pnav-arrow">▾</span></a>
+        <div class="pnav-dropdown">
+            <a href="assets.html#sec-depreciation">📉 減価償却</a>
+            <a href="assets.html#sec-bm">🔧 BM集計</a>
+            <a href="assets.html#sec-lots">📜 筆一覧</a>
+        </div>
+    </div>
+    <div class="pnav-item">
+        <a href="import.html" class="pnav-link">⬆️ データ取込</a>
+    </div>
+</div>
+
+<!-- FY タブバー -->
+<div class="fy-tabbar-fin" id="fyTabBarFin">
+    <a class="fy-tab-fin confirmed" href="financials.html?fy=22" data-fy="22">FY22<span class="fy-sub">第1期 確定</span></a>
+    <a class="fy-tab-fin confirmed" href="financials.html?fy=23" data-fy="23">FY23<span class="fy-sub">第2期 確定</span></a>
+    <a class="fy-tab-fin confirmed" href="financials.html?fy=24" data-fy="24">FY24<span class="fy-sub">第3期 確定</span></a>
+    <a class="fy-tab-fin confirmed" href="financials.html?fy=25" data-fy="25">FY25<span class="fy-sub">第4期 確定</span></a>
+    <a class="fy-tab-fin" href="financials.html?fy=26" data-fy="26">FY26<span class="fy-sub">第5期 予測</span></a>
+    <a class="fy-tab-fin" href="financials.html?fy=27" data-fy="27">FY27<span class="fy-sub">第6期 目標</span></a>
+    <a class="fy-tab-fin" href="financials.html" data-fy-all="1">全期間<span class="fy-sub">推移グラフ</span></a>
+</div>
+
+<!-- ローカルナビは廃止：FYタブ + 縦スクロールの2層構成 -->
+
+<!-- 年度スナップショット（単一FY選択時） -->
+<div id="fySnapshotView" style="display:none">
+<div class="container">
+    <div class="section" id="snap-pl">
+        <div class="section-title" id="snapTitle">📊 年度サマリー</div>
+        <div class="snap-kpi-grid" id="snapKpiGrid"></div>
+        <div class="grid-2">
+            <div class="card"><div class="card-title">📋 損益計算書（P/L）</div><table id="snapPLTable"></table></div>
+            <div class="card" id="snap-bs"><div class="card-title">📐 貸借対照表（B/S）</div><table id="snapBSTable"></table></div>
+        </div>
+    </div>
+    <div class="section" id="snap-loan">
+        <div class="section-title">🏦 借入・C/F 概要</div>
+        <div class="grid-2">
+            <div class="card" id="snap-cf"><div class="card-title">💧 キャッシュフロー概要</div><table id="snapCFTable"></table></div>
+            <div class="card"><div class="card-title">📈 財務健全性指標</div><table id="snapMetricsTable"></table></div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- 全期間ビュー -->
+<div id="fyAllView">
+<div class="container">
+
+<div class="section" id="sec-pl-trend">
+    <div class="section-title">📈 売上高・損益 長期推移（FY22〜FY36）<span class="badge-title">全ステージ</span></div>
+    <div class="card">
+        <div class="card-title">📊 P/L 推移（百万円）</div>
+        <div class="chart-wrap chart-wrap-md"><canvas id="plChartTrend"></canvas></div>
+    </div>
+</div>
+
+<div class="section" id="sec-bs-trend">
+    <div class="section-title">📉 資産・借入・純資産 推移（FY22〜FY36）<span class="badge-title">計画含む</span></div>
+    <div class="card" style="margin-bottom:16px">
+        <div class="chart-wrap chart-wrap-lg"><canvas id="equityChartTrend"></canvas></div>
+    </div>
+    <div class="card">
+        <div class="card-title">🏦 現預金・純資産・長期借入金 月次推移（FY22〜FY25 実績）</div>
+        <div class="chart-wrap" style="height:220px"><canvas id="bsMonthlyChart"></canvas></div>
+        <div style="margin-top:10px;padding:8px 10px;background:#f8fafc;border-radius:6px;font-size:10px;color:var(--text-light)">
+            ※ 現預金の突出（2024-10〜12: 2,700万超）はCasaTerzo決済後・Candai取得前の一時滞留。
+            3月の段差は新規物件取得のタイミング。長期借入金（右軸）は物件取得のたびに階段状に増加。
+        </div>
+    </div>
+</div>
+
+<!-- ========== 長期推移サマリー（FY22〜FY36） ========== -->
+<div class="section" id="sec-long-trend">
+    <div class="section-title">📋 長期推移サマリー（実績＋全期間目標）<span class="badge-title">FY22〜FY36 ｜ ★=ステージ末</span></div>
+    <!-- P/L テーブル（下段） -->
+    <div style="margin-top:16px">
+        <div class="card">
+            <div class="card-title">📋 P/L 推移サマリー（実績＋全期間目標） <span style="font-size:10px;color:var(--text-light);font-weight:400">★=ステージ末</span></div>
+            <div style="overflow-x:auto">
+            <table class="trend-table" style="min-width:1500px">
+                <thead><tr>
+                    <th style="min-width:140px">指標</th>
+                    <th class="text-right">FY22</th><th class="text-right">FY23</th><th class="text-right">FY24</th>
+                    <th class="text-right fy25">FY25<br><span style="font-size:9px;font-weight:400">現在地</span></th>
+                    <th class="text-right proj">FY26予</th>
+                    <th class="text-right se">FY27目★<br><span style="font-size:9px">2ND末</span></th>
+                    <th class="text-right proj">FY28目</th><th class="text-right proj">FY29目</th>
+                    <th class="text-right se">FY30目★<br><span style="font-size:9px">3RD末</span></th>
+                    <th class="text-right proj">FY31目</th><th class="text-right proj">FY32目</th>
+                    <th class="text-right se">FY33目★<br><span style="font-size:9px">4TH末</span></th>
+                    <th class="text-right proj">FY34目</th><th class="text-right proj">FY35目</th>
+                    <th class="text-right se">FY36目★<br><span style="font-size:9px">5TH末</span></th>
+                </tr></thead>
+                <tbody>
+<!-- ◆ 売上高 -->
+<tr style="background:#edf2ff"><td colspan="16" style="padding:5px 8px;font-size:11px;font-weight:700;color:#4060a0">◆ 売上高</td></tr>
+<tr><td>不動産賃貸収入</td><td class="text-right">333万</td><td class="text-right">550万</td><td class="text-right">1,298万</td><td class="text-right fy25">2,579万</td><td class="text-right proj">3,700万</td><td class="text-right se">4,600万</td><td class="text-right proj">5,200万</td><td class="text-right proj">5,200万</td><td class="text-right se">6,480万</td><td class="text-right proj">7,760万</td><td class="text-right proj">8,400万</td><td class="text-right se">8,400万</td><td class="text-right proj">9,040万</td><td class="text-right proj">9,680万</td><td class="text-right se">8,400万</td></tr>
+<tr><td>更新手数料収入</td><td class="text-right text-muted">—</td><td class="text-right text-muted">—</td><td class="text-right">6万</td><td class="text-right fy25">11万</td><td class="text-right proj">20万</td><td class="text-right se">25万</td><td class="text-right proj">25万</td><td class="text-right proj">25万</td><td class="text-right se">30万</td><td class="text-right proj">35万</td><td class="text-right proj">35万</td><td class="text-right se">35万</td><td class="text-right proj">40万</td><td class="text-right proj">40万</td><td class="text-right se">40万</td></tr>
+<tr style="background:#e8f0fc"><td style="font-weight:700">売上高 計</td><td class="text-right" style="font-weight:700">333万</td><td class="text-right" style="font-weight:700">550万</td><td class="text-right" style="font-weight:700">1,304万</td><td class="text-right fy25" style="font-weight:700">2,590万</td><td class="text-right proj" style="font-weight:700">3,720万</td><td class="text-right se" style="font-weight:700">4,625万</td><td class="text-right proj" style="font-weight:700">5,225万</td><td class="text-right proj" style="font-weight:700">5,225万</td><td class="text-right se" style="font-weight:700">6,510万</td><td class="text-right proj" style="font-weight:700">7,795万</td><td class="text-right proj" style="font-weight:700">8,435万</td><td class="text-right se" style="font-weight:700">8,435万</td><td class="text-right proj" style="font-weight:700">9,080万</td><td class="text-right proj" style="font-weight:700">9,720万</td><td class="text-right se" style="font-weight:700">8,440万</td></tr>
+<tr style="background:#f0f4f8"><td style="padding-left:16px;color:var(--text-light)">└（参考）売却益込み総収入</td><td class="text-right text-muted">333万</td><td class="text-right text-muted">550万</td><td class="text-right text-muted">1,304万</td><td class="text-right fy25 text-muted">2,590万</td><td class="text-right proj text-muted">3,720万</td><td class="text-right se text-muted">4,625万</td><td class="text-right proj text-muted">7,325万</td><td class="text-right proj text-muted">10,325万</td><td class="text-right se text-muted">6,510万</td><td class="text-right proj text-muted">7,795万</td><td class="text-right proj text-muted">10,835万</td><td class="text-right se text-muted">11,235万</td><td class="text-right proj text-muted">9,080万</td><td class="text-right proj text-muted">9,720万</td><td class="text-right se text-muted">12,040万</td></tr>
+<!-- ◆ 物件関連費用 -->
+<tr style="background:#edf2ff"><td colspan="16" style="padding:5px 8px;font-size:11px;font-weight:700;color:#4060a0">◆ 物件関連費用</td></tr>
+<tr><td>建物維持管理費<br><span style="font-size:10px;font-weight:400;color:var(--text-light)">予測：売上×5%</span></td><td class="text-right">9万</td><td class="text-right">15万</td><td class="text-right">46万</td><td class="text-right fy25">117万</td><td class="text-right proj">185万</td><td class="text-right se">230万</td><td class="text-right proj">260万</td><td class="text-right proj">260万</td><td class="text-right se">324万</td><td class="text-right proj">388万</td><td class="text-right proj">420万</td><td class="text-right se">420万</td><td class="text-right proj">452万</td><td class="text-right proj">484万</td><td class="text-right se">420万</td></tr>
+<tr><td>広告宣伝費<br><span style="font-size:10px;font-weight:400;color:var(--text-light)">予測：取得棟×60万（初期全室募集）＋20万/年</span></td><td class="text-right">76万</td><td class="text-right">29万</td><td class="text-right">164万</td><td class="text-right fy25">169万</td><td class="text-right proj">70万</td><td class="text-right se">140万</td><td class="text-right proj">80万</td><td class="text-right proj">140万</td><td class="text-right se">140万</td><td class="text-right proj">140万</td><td class="text-right proj">140万</td><td class="text-right se">140万</td><td class="text-right proj">80万</td><td class="text-right proj">80万</td><td class="text-right se">80万</td></tr>
+<tr><td>保険料<br><span style="font-size:10px;font-weight:400;color:var(--text-light)">予測：棟×10万</span></td><td class="text-right">8万</td><td class="text-right">11万</td><td class="text-right">36万</td><td class="text-right fy25">42万</td><td class="text-right proj">60万</td><td class="text-right se">80万</td><td class="text-right proj">80万</td><td class="text-right proj">80万</td><td class="text-right se">100万</td><td class="text-right proj">120万</td><td class="text-right proj">130万</td><td class="text-right se">130万</td><td class="text-right proj">140万</td><td class="text-right proj">150万</td><td class="text-right se">130万</td></tr>
+<tr><td>修繕費<br><span style="font-size:10px;font-weight:400;color:var(--text-light)">予測：棟×5万</span></td><td class="text-right text-muted">—</td><td class="text-right text-muted">—</td><td class="text-right">2万</td><td class="text-right fy25">4万</td><td class="text-right proj">30万</td><td class="text-right se">40万</td><td class="text-right proj">40万</td><td class="text-right proj">40万</td><td class="text-right se">50万</td><td class="text-right proj">60万</td><td class="text-right proj">65万</td><td class="text-right se">65万</td><td class="text-right proj">70万</td><td class="text-right proj">75万</td><td class="text-right se">65万</td></tr>
+<!-- ◆ 一般管理費 -->
+<tr style="background:#edf2ff"><td colspan="16" style="padding:5px 8px;font-size:11px;font-weight:700;color:#4060a0">◆ 一般管理費</td></tr>
+<tr><td>支払手数料<br><span style="font-size:10px;font-weight:400;color:var(--text-light)">予測：50万/年（取得費は資産計上）</span></td><td class="text-right">17万</td><td class="text-right">1万</td><td class="text-right">41万</td><td class="text-right fy25">231万</td><td class="text-right proj">50万</td><td class="text-right se">50万</td><td class="text-right proj">50万</td><td class="text-right proj">50万</td><td class="text-right se">50万</td><td class="text-right proj">50万</td><td class="text-right proj">50万</td><td class="text-right se">50万</td><td class="text-right proj">50万</td><td class="text-right proj">50万</td><td class="text-right se">50万</td></tr>
+<tr><td>租税公課<br><span style="font-size:10px;font-weight:400;color:var(--text-light)">予測：棟×30万（固定資産税等）</span></td><td class="text-right text-muted">—</td><td class="text-right">87万</td><td class="text-right">95万</td><td class="text-right fy25">160万</td><td class="text-right proj">180万</td><td class="text-right se">240万</td><td class="text-right proj">240万</td><td class="text-right proj">240万</td><td class="text-right se">300万</td><td class="text-right proj">360万</td><td class="text-right proj">390万</td><td class="text-right se">390万</td><td class="text-right proj">420万</td><td class="text-right proj">450万</td><td class="text-right se">390万</td></tr>
+<tr><td>支払報酬料<br><span style="font-size:10px;font-weight:400;color:var(--text-light)">税理士等</span></td><td class="text-right text-muted">—</td><td class="text-right">45万</td><td class="text-right">45万</td><td class="text-right fy25">71万</td><td class="text-right proj">100万</td><td class="text-right se">100万</td><td class="text-right proj">100万</td><td class="text-right proj">120万</td><td class="text-right se">120万</td><td class="text-right proj">120万</td><td class="text-right proj">150万</td><td class="text-right se">150万</td><td class="text-right proj">150万</td><td class="text-right proj">150万</td><td class="text-right se">150万</td></tr>
+<!-- 役員報酬：経常利益800万超の超過分を役員報酬に振替。役員が会社に再貸付→役員借入金増加 -->
+<tr style="background:#fff8e1"><td style="font-weight:600;color:#b45309">役員報酬<br><span style="font-size:10px;font-weight:400;color:var(--text-light)">経常利益800万超を振替（役員借入金へ還流）</span></td>
+  <td class="text-right text-muted">—</td><td class="text-right text-muted">—</td><td class="text-right text-muted">—</td><td class="text-right fy25 text-muted">—</td>
+  <td class="text-right proj text-muted">—</td><td class="text-right se text-muted">—</td>
+  <td class="text-right proj" style="color:#b45309;font-weight:600">196万</td>
+  <td class="text-right proj" style="color:#b45309;font-weight:600">166万</td>
+  <td class="text-right se" style="color:#b45309;font-weight:600">667万</td>
+  <td class="text-right proj" style="color:#b45309;font-weight:600">968万</td>
+  <td class="text-right proj" style="color:#b45309;font-weight:600">951万</td>
+  <td class="text-right se" style="color:#b45309;font-weight:600">841万</td>
+  <td class="text-right proj" style="color:#b45309;font-weight:600">1,069万</td>
+  <td class="text-right proj" style="color:#b45309;font-weight:600">1,262万</td>
+  <td class="text-right se" style="color:#b45309;font-weight:600">676万</td></tr>
+<tr><td>外注費</td><td class="text-right text-muted">—</td><td class="text-right">13万</td><td class="text-right">15万</td><td class="text-right fy25">15万</td><td class="text-right proj">20万</td><td class="text-right se">20万</td><td class="text-right proj">20万</td><td class="text-right proj">20万</td><td class="text-right se">20万</td><td class="text-right proj">20万</td><td class="text-right proj">20万</td><td class="text-right se">20万</td><td class="text-right proj">20万</td><td class="text-right proj">20万</td><td class="text-right se">20万</td></tr>
+<tr><td>旅費交通費</td><td class="text-right">2万</td><td class="text-right">4万</td><td class="text-right">9万</td><td class="text-right fy25">39万</td><td class="text-right proj">50万</td><td class="text-right se">50万</td><td class="text-right proj">50万</td><td class="text-right proj">50万</td><td class="text-right se">50万</td><td class="text-right proj">50万</td><td class="text-right proj">50万</td><td class="text-right se">50万</td><td class="text-right proj">50万</td><td class="text-right proj">50万</td><td class="text-right se">50万</td></tr>
+<tr><td>通信費</td><td class="text-right">3万</td><td class="text-right text-muted">—</td><td class="text-right">9万</td><td class="text-right fy25">36万</td><td class="text-right proj">40万</td><td class="text-right se">40万</td><td class="text-right proj">40万</td><td class="text-right proj">40万</td><td class="text-right se">40万</td><td class="text-right proj">40万</td><td class="text-right proj">40万</td><td class="text-right se">40万</td><td class="text-right proj">40万</td><td class="text-right proj">40万</td><td class="text-right se">40万</td></tr>
+<tr><td>地代家賃</td><td class="text-right text-muted">—</td><td class="text-right text-muted">—</td><td class="text-right">19万</td><td class="text-right fy25">19万</td><td class="text-right proj">20万</td><td class="text-right se">20万</td><td class="text-right proj">20万</td><td class="text-right proj">20万</td><td class="text-right se">20万</td><td class="text-right proj">20万</td><td class="text-right proj">20万</td><td class="text-right se">20万</td><td class="text-right proj">20万</td><td class="text-right proj">20万</td><td class="text-right se">20万</td></tr>
+<tr><td>諸会費</td><td class="text-right text-muted">—</td><td class="text-right">11万</td><td class="text-right">16万</td><td class="text-right fy25">14万</td><td class="text-right proj">20万</td><td class="text-right se">20万</td><td class="text-right proj">20万</td><td class="text-right proj">20万</td><td class="text-right se">20万</td><td class="text-right proj">20万</td><td class="text-right proj">20万</td><td class="text-right se">20万</td><td class="text-right proj">20万</td><td class="text-right proj">20万</td><td class="text-right se">20万</td></tr>
+<tr><td>交際費</td><td class="text-right">1万</td><td class="text-right">7万</td><td class="text-right">11万</td><td class="text-right fy25">6万</td><td class="text-right proj">30万</td><td class="text-right se">30万</td><td class="text-right proj">30万</td><td class="text-right proj">30万</td><td class="text-right se">30万</td><td class="text-right proj">30万</td><td class="text-right proj">30万</td><td class="text-right se">30万</td><td class="text-right proj">30万</td><td class="text-right proj">30万</td><td class="text-right se">30万</td></tr>
+<tr><td>その他一般管理費<br><span style="font-size:10px;font-weight:400;color:var(--text-light)">消耗品・研修・水道光熱費等</span></td><td class="text-right text-muted">—</td><td class="text-right">9万</td><td class="text-right">18万</td><td class="text-right fy25">16万</td><td class="text-right proj">20万</td><td class="text-right se">20万</td><td class="text-right proj">20万</td><td class="text-right proj">20万</td><td class="text-right se">20万</td><td class="text-right proj">20万</td><td class="text-right proj">20万</td><td class="text-right se">20万</td><td class="text-right proj">20万</td><td class="text-right proj">20万</td><td class="text-right se">20万</td></tr>
+<!-- ◆ 非現金費用 -->
+<tr style="background:#edf2ff"><td colspan="16" style="padding:5px 8px;font-size:11px;font-weight:700;color:#4060a0">◆ 非現金費用</td></tr>
+<tr><td>減価償却費</td><td class="text-right">162万</td><td class="text-right">222万</td><td class="text-right">547万</td><td class="text-right fy25">1,109万</td><td class="text-right proj">1,349万</td><td class="text-right se">1,750万</td><td class="text-right proj">1,960万</td><td class="text-right proj">1,900万</td><td class="text-right se">2,280万</td><td class="text-right proj">2,780万</td><td class="text-right proj">3,100万</td><td class="text-right se">3,160万</td><td class="text-right proj">3,420万</td><td class="text-right proj">3,670万</td><td class="text-right se">3,350万</td></tr>
+<!-- 営業利益（役員報酬控除後） -->
+<tr style="background:#dce8f8;font-weight:700"><td>営業利益</td><td class="text-right">54万</td><td class="text-right">93万</td><td class="text-right">228万</td><td class="text-right fy25">538万</td><td class="text-right proj">1,496万</td><td class="text-right se">1,795万</td><td class="text-right proj">2,019万</td><td class="text-right proj">2,029万</td><td class="text-right se">2,279万</td><td class="text-right proj">2,609万</td><td class="text-right proj">2,839万</td><td class="text-right se">2,889万</td><td class="text-right proj">3,029万</td><td class="text-right proj">3,149万</td><td class="text-right se">2,929万</td></tr>
+<!-- ◆ 営業外損益 -->
+<tr style="background:#edf2ff"><td colspan="16" style="padding:5px 8px;font-size:11px;font-weight:700;color:#4060a0">◆ 営業外損益</td></tr>
+<tr><td>受取利息</td><td class="text-right text-muted">—</td><td class="text-right text-muted">—</td><td class="text-right">1万</td><td class="text-right fy25">1万</td><td class="text-right proj">1万</td><td class="text-right se">1万</td><td class="text-right proj">1万</td><td class="text-right proj">1万</td><td class="text-right se">1万</td><td class="text-right proj">1万</td><td class="text-right proj">1万</td><td class="text-right se">1万</td><td class="text-right proj">1万</td><td class="text-right proj">1万</td><td class="text-right se">1万</td></tr>
+<tr><td>雑収入<br><span style="font-size:10px;font-weight:400;color:var(--text-light)">FY26以降は予測対象外</span></td><td class="text-right">37万</td><td class="text-right">17万</td><td class="text-right">7万</td><td class="text-right fy25">57万</td><td class="text-right proj text-muted">—</td><td class="text-right se text-muted">—</td><td class="text-right proj text-muted">—</td><td class="text-right proj text-muted">—</td><td class="text-right se text-muted">—</td><td class="text-right proj text-muted">—</td><td class="text-right proj text-muted">—</td><td class="text-right se text-muted">—</td><td class="text-right proj text-muted">—</td><td class="text-right proj text-muted">—</td><td class="text-right se text-muted">—</td></tr>
+<tr><td>支払利息</td><td class="text-right">63万</td><td class="text-right">85万</td><td class="text-right">197万</td><td class="text-right fy25">466万</td><td class="text-right proj">775万</td><td class="text-right se">1,040万</td><td class="text-right proj">1,220万</td><td class="text-right proj">1,230万</td><td class="text-right se">1,480万</td><td class="text-right proj">1,810万</td><td class="text-right proj">2,040万</td><td class="text-right se">2,090万</td><td class="text-right proj">2,230万</td><td class="text-right proj">2,350万</td><td class="text-right se">2,130万</td></tr>
+<!-- 経常利益（役員報酬控除後。FY28以降800万上限） -->
+<tr style="background:#dce8f8;font-weight:700"><td>経常利益<br><span style="font-size:10px;font-weight:400;color:var(--text-light)">役員報酬控除後（FY28〜上限800万）</span></td><td class="text-right">28万</td><td class="text-right">26万</td><td class="text-right">39万</td><td class="text-right fy25">130万</td><td class="text-right proj">722万</td><td class="text-right se">756万</td><td class="text-right proj">800万</td><td class="text-right proj">800万</td><td class="text-right se">800万</td><td class="text-right proj">800万</td><td class="text-right proj">800万</td><td class="text-right se">800万</td><td class="text-right proj">800万</td><td class="text-right proj">800万</td><td class="text-right se">800万</td></tr>
+<tr style="background:#f0f4f8"><td style="padding-left:16px;color:var(--text-light)">└ 経常利益率</td><td class="text-right text-muted">8.4%</td><td class="text-right text-muted">4.7%</td><td class="text-right text-muted">3.0%</td><td class="text-right fy25 text-muted">5.0%</td><td class="text-right proj text-muted">19.4%</td><td class="text-right se text-muted">16.3%</td><td class="text-right proj text-muted">15.3%</td><td class="text-right proj text-muted">15.3%</td><td class="text-right se text-muted">12.3%</td><td class="text-right proj text-muted">10.3%</td><td class="text-right proj text-muted">9.5%</td><td class="text-right se text-muted">9.5%</td><td class="text-right proj text-muted">8.8%</td><td class="text-right proj text-muted">8.2%</td><td class="text-right se text-muted">9.5%</td></tr>
+<!-- みなし経常利益（役員報酬含む：法人の真の稼ぐ力） -->
+<tr style="background:#fef9e7"><td style="padding-left:16px;color:#92400e;font-weight:600">└ みなし経常利益<br><span style="font-size:10px;font-weight:400;color:var(--text-light)">役員報酬込み（法人の真の稼ぐ力）</span></td>
+  <td class="text-right" style="color:#92400e">28万</td><td class="text-right" style="color:#92400e">26万</td><td class="text-right" style="color:#92400e">39万</td><td class="text-right fy25" style="color:#92400e">130万</td>
+  <td class="text-right proj" style="color:#92400e">722万</td><td class="text-right se" style="color:#92400e">756万</td>
+  <td class="text-right proj" style="color:#92400e">996万</td><td class="text-right proj" style="color:#92400e">966万</td><td class="text-right se" style="color:#92400e">1,467万</td>
+  <td class="text-right proj" style="color:#92400e">1,768万</td><td class="text-right proj" style="color:#92400e">1,751万</td><td class="text-right se" style="color:#92400e">1,641万</td>
+  <td class="text-right proj" style="color:#92400e">1,869万</td><td class="text-right proj" style="color:#92400e">2,062万</td><td class="text-right se" style="color:#92400e">1,476万</td></tr>
+<tr style="background:#fef9e7"><td style="padding-left:16px;color:#92400e">└ みなし経常利益率</td>
+  <td class="text-right" style="color:#92400e">8.4%</td><td class="text-right" style="color:#92400e">4.7%</td><td class="text-right" style="color:#92400e">3.0%</td><td class="text-right fy25" style="color:#92400e">5.0%</td>
+  <td class="text-right proj" style="color:#92400e">19.4%</td><td class="text-right se" style="color:#92400e">16.3%</td>
+  <td class="text-right proj" style="color:#92400e">19.1%</td><td class="text-right proj" style="color:#92400e">18.5%</td><td class="text-right se" style="color:#92400e">22.5%</td>
+  <td class="text-right proj" style="color:#92400e">22.7%</td><td class="text-right proj" style="color:#92400e">20.8%</td><td class="text-right se" style="color:#92400e">19.5%</td>
+  <td class="text-right proj" style="color:#92400e">20.6%</td><td class="text-right proj" style="color:#92400e">21.2%</td><td class="text-right se" style="color:#92400e">17.5%</td></tr>
+<!-- ◆ 特別損益 -->
+<tr style="background:#edf2ff"><td colspan="16" style="padding:5px 8px;font-size:11px;font-weight:700;color:#4060a0">◆ 特別損益</td></tr>
+<tr><td>売却益（特別利益）<br><span style="font-size:10px;font-weight:400;color:var(--text-light)">売価=鑑定or年収÷7%－帳簿価額</span></td><td class="text-right text-muted">—</td><td class="text-right text-muted">—</td><td class="text-right text-muted">—</td><td class="text-right fy25 text-muted">—</td><td class="text-right proj text-muted">—</td><td class="text-right se text-muted">—</td><td class="text-right proj" style="color:var(--success)">2,100万</td><td class="text-right proj" style="color:var(--success)">5,100万</td><td class="text-right se text-muted">—</td><td class="text-right proj text-muted">—</td><td class="text-right proj" style="color:var(--success)">2,400万</td><td class="text-right se" style="color:var(--success)">2,800万</td><td class="text-right proj text-muted">—</td><td class="text-right proj text-muted">—</td><td class="text-right se" style="color:var(--success)">3,600万</td></tr>
+<tr><td>売却費（特別損失）<br><span style="font-size:10px;font-weight:400;color:var(--text-light)">売却棟×300万（仲介等）</span></td><td class="text-right text-muted">—</td><td class="text-right text-muted">—</td><td class="text-right text-muted">—</td><td class="text-right fy25 text-muted">—</td><td class="text-right proj text-muted">—</td><td class="text-right se text-muted">—</td><td class="text-right proj" style="color:var(--danger)">300万</td><td class="text-right proj" style="color:var(--danger)">600万</td><td class="text-right se text-muted">—</td><td class="text-right proj text-muted">—</td><td class="text-right proj" style="color:var(--danger)">300万</td><td class="text-right se" style="color:var(--danger)">600万</td><td class="text-right proj text-muted">—</td><td class="text-right proj text-muted">—</td><td class="text-right se" style="color:var(--danger)">900万</td></tr>
+<!-- 税引前当期純利益（役員報酬控除後） -->
+<tr style="background:#dce8f8;font-weight:700"><td>税引前当期純利益</td><td class="text-right">28万</td><td class="text-right">26万</td><td class="text-right">39万</td><td class="text-right fy25">130万</td><td class="text-right proj">722万</td><td class="text-right se">756万</td><td class="text-right proj">2,600万</td><td class="text-right proj">5,300万</td><td class="text-right se">800万</td><td class="text-right proj">800万</td><td class="text-right proj">2,900万</td><td class="text-right se">3,000万</td><td class="text-right proj">800万</td><td class="text-right proj">800万</td><td class="text-right se">3,500万</td></tr>
+<tr><td>法人税等<br><span style="font-size:10px;font-weight:400;color:var(--text-light)">実績=freee実績/予測=税前×30%</span></td><td class="text-right">12万</td><td class="text-right">13万</td><td class="text-right">16万</td><td class="text-right fy25">36万</td><td class="text-right proj">217万</td><td class="text-right se">227万</td><td class="text-right proj">780万</td><td class="text-right proj">1,590万</td><td class="text-right se">240万</td><td class="text-right proj">240万</td><td class="text-right proj">870万</td><td class="text-right se">900万</td><td class="text-right proj">240万</td><td class="text-right proj">240万</td><td class="text-right se">1,050万</td></tr>
+<!-- 当期純利益（役員報酬控除後） -->
+<tr style="background:#c8ddf5;font-weight:700"><td>当期純利益</td><td class="text-right">15万</td><td class="text-right">13万</td><td class="text-right">23万</td><td class="text-right fy25">94万</td><td class="text-right proj">505万</td><td class="text-right se">529万</td><td class="text-right proj">1,820万</td><td class="text-right proj">3,710万</td><td class="text-right se">560万</td><td class="text-right proj">560万</td><td class="text-right proj">2,030万</td><td class="text-right se">2,100万</td><td class="text-right proj">560万</td><td class="text-right proj">560万</td><td class="text-right se">2,450万</td></tr>
+<!-- ◆ キャッシュフロー -->
+<tr style="background:#edf2ff"><td colspan="16" style="padding:5px 8px;font-size:11px;font-weight:700;color:#4060a0">◆ キャッシュフロー</td></tr>
+<tr><td>実質CF<br><span style="font-size:10px;font-weight:400;color:var(--text-light)">当期純利益＋減価償却費</span></td><td class="text-right">177万</td><td class="text-right">235万</td><td class="text-right">570万</td><td class="text-right fy25">1,203万</td><td class="text-right proj">1,854万</td><td class="text-right se">2,279万</td><td class="text-right proj">3,780万</td><td class="text-right proj">5,610万</td><td class="text-right se">2,840万</td><td class="text-right proj">3,340万</td><td class="text-right proj">5,130万</td><td class="text-right se">5,260万</td><td class="text-right proj">3,980万</td><td class="text-right proj">4,230万</td><td class="text-right se">5,800万</td></tr>
+<tr style="background:#f0f4f8"><td style="padding-left:16px;color:var(--text-light)">└ 元金返済（概算）<br><span style="font-size:10px;font-weight:400">P&I－支払利息</span></td><td class="text-right text-muted">337万</td><td class="text-right text-muted">715万</td><td class="text-right text-muted">1,003万</td><td class="text-right fy25 text-muted">1,534万</td><td class="text-right proj text-muted">1,210万</td><td class="text-right se text-muted">1,550万</td><td class="text-right proj text-muted">1,820万</td><td class="text-right proj text-muted">1,780万</td><td class="text-right se text-muted">2,130万</td><td class="text-right proj text-muted">2,590万</td><td class="text-right proj text-muted">2,780万</td><td class="text-right se text-muted">2,870万</td><td class="text-right proj text-muted">3,160万</td><td class="text-right proj text-muted">3,440万</td><td class="text-right se text-muted">3,160万</td></tr>
+<tr style="font-weight:700"><td>FCF（元金返済後）<br><span style="font-size:10px;font-weight:400;color:var(--text-light)">実質CF－元金返済</span></td><td class="text-right" style="color:var(--danger)">▲160万</td><td class="text-right" style="color:var(--danger)">▲480万</td><td class="text-right" style="color:var(--danger)">▲433万</td><td class="text-right fy25" style="color:var(--danger)">▲331万</td><td class="text-right proj" style="color:var(--success)">644万</td><td class="text-right se" style="color:var(--success)">729万</td><td class="text-right proj" style="color:var(--success)">1,960万</td><td class="text-right proj" style="color:var(--success)">3,830万</td><td class="text-right se" style="color:var(--success)">710万</td><td class="text-right proj" style="color:var(--success)">750万</td><td class="text-right proj" style="color:var(--success)">2,350万</td><td class="text-right se" style="color:var(--success)">2,390万</td><td class="text-right proj" style="color:var(--success)">820万</td><td class="text-right proj" style="color:var(--success)">790万</td><td class="text-right se" style="color:var(--success)">2,640万</td></tr>
+                </tbody>
+            </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ポートフォリオ推移カード -->
+    <div style="margin-top:16px">
+        <div class="card">
+            <div class="card-title">🏢 ポートフォリオ推移 <span style="font-size:10px;color:var(--text-light);font-weight:400">★=ステージ末</span></div>
+            <div style="overflow-x:auto">
+                <table class="trend-table" style="min-width:1500px">
+                    <thead><tr>
+                        <th style="min-width:160px">指標</th>
+                        <th class="text-right">FY22</th><th class="text-right">FY23</th><th class="text-right">FY24</th>
+                        <th class="text-right fy25">FY25<br><span style="font-size:9px;font-weight:400">現在地</span></th>
+                        <th class="text-right proj">FY26予</th>
+                        <th class="text-right se">FY27目★<br><span style="font-size:9px">2ND末</span></th>
+                        <th class="text-right proj">FY28目</th><th class="text-right proj">FY29目</th>
+                        <th class="text-right se">FY30目★<br><span style="font-size:9px">3RD末</span></th>
+                        <th class="text-right proj">FY31目</th><th class="text-right proj">FY32目</th>
+                        <th class="text-right se">FY33目★<br><span style="font-size:9px">4TH末</span></th>
+                        <th class="text-right proj">FY34目</th><th class="text-right proj">FY35目</th>
+                        <th class="text-right se">FY36目★<br><span style="font-size:9px">5TH末</span></th>
+                    </tr></thead>
+                    <tbody>
+<tr><td>保有棟数</td><td class="text-right">1棟</td><td class="text-right">2棟</td><td class="text-right">3棟</td><td class="text-right fy25">5棟</td><td class="text-right proj">6棟</td><td class="text-right se">8棟</td><td class="text-right proj">8棟</td><td class="text-right proj">8棟</td><td class="text-right se">10棟</td><td class="text-right proj">12棟</td><td class="text-right proj">13棟</td><td class="text-right se">13棟</td><td class="text-right proj">14棟</td><td class="text-right proj">15棟</td><td class="text-right se">13棟</td></tr>
+<tr><td>保有戸数</td><td class="text-right">8戸</td><td class="text-right">16戸</td><td class="text-right">25戸</td><td class="text-right fy25">41戸</td><td class="text-right proj">49戸</td><td class="text-right se">65戸</td><td class="text-right proj">65戸</td><td class="text-right proj">65戸</td><td class="text-right se">81戸</td><td class="text-right proj">97戸</td><td class="text-right proj">105戸</td><td class="text-right se">105戸</td><td class="text-right proj">113戸</td><td class="text-right proj">121戸</td><td class="text-right se">105戸</td></tr>
+<tr style="background:#f0f4f8"><td style="padding-left:16px;color:var(--success)">└ 取得（当年）</td><td class="text-right" style="color:var(--success)">+1棟</td><td class="text-right" style="color:var(--success)">+1棟</td><td class="text-right" style="color:var(--success)">+1棟</td><td class="text-right fy25" style="color:var(--success)">+2棟</td><td class="text-right proj" style="color:var(--success)">+1棟</td><td class="text-right se" style="color:var(--success)">+2棟</td><td class="text-right proj" style="color:var(--success)">+1棟</td><td class="text-right proj" style="color:var(--success)">+2棟</td><td class="text-right se" style="color:var(--success)">+2棟</td><td class="text-right proj" style="color:var(--success)">+2棟</td><td class="text-right proj" style="color:var(--success)">+2棟</td><td class="text-right se" style="color:var(--success)">+2棟</td><td class="text-right proj" style="color:var(--success)">+1棟</td><td class="text-right proj" style="color:var(--success)">+1棟</td><td class="text-right se" style="color:var(--success)">+1棟</td></tr>
+<tr style="background:#f0f4f8"><td style="padding-left:16px;color:var(--danger)">└ 売却（当年）</td><td class="text-right text-muted">—</td><td class="text-right text-muted">—</td><td class="text-right text-muted">—</td><td class="text-right fy25 text-muted">—</td><td class="text-right proj text-muted">—</td><td class="text-right se text-muted">—</td><td class="text-right proj" style="color:var(--danger)">▼1棟</td><td class="text-right proj" style="color:var(--danger)">▼2棟</td><td class="text-right se text-muted">—</td><td class="text-right proj text-muted">—</td><td class="text-right proj" style="color:var(--danger)">▼1棟</td><td class="text-right se" style="color:var(--danger)">▼2棟</td><td class="text-right proj text-muted">—</td><td class="text-right proj text-muted">—</td><td class="text-right se" style="color:var(--danger)">▼3棟</td></tr>
+<tr><td>戸あたり賃料</td><td class="text-right text-muted">42万/戸</td><td class="text-right text-muted">34万/戸</td><td class="text-right text-muted">52万/戸</td><td class="text-right fy25 text-muted">63万/戸</td><td class="text-right proj text-muted">76万/戸</td><td class="text-right se text-muted">71万/戸</td><td class="text-right proj text-muted">80万/戸</td><td class="text-right proj text-muted">80万/戸</td><td class="text-right se text-muted">80万/戸</td><td class="text-right proj text-muted">80万/戸</td><td class="text-right proj text-muted">80万/戸</td><td class="text-right se text-muted">80万/戸</td><td class="text-right proj text-muted">80万/戸</td><td class="text-right proj text-muted">80万/戸</td><td class="text-right se text-muted">80万/戸</td></tr>
+<tr><td>棟あたり賃貸収入</td><td class="text-right text-muted">333万/棟</td><td class="text-right text-muted">275万/棟</td><td class="text-right text-muted">433万/棟</td><td class="text-right fy25 text-muted">516万/棟</td><td class="text-right proj text-muted">617万/棟</td><td class="text-right se text-muted">575万/棟</td><td class="text-right proj text-muted">650万/棟</td><td class="text-right proj text-muted">650万/棟</td><td class="text-right se text-muted">648万/棟</td><td class="text-right proj text-muted">647万/棟</td><td class="text-right proj text-muted">646万/棟</td><td class="text-right se text-muted">646万/棟</td><td class="text-right proj text-muted">646万/棟</td><td class="text-right proj text-muted">645万/棟</td><td class="text-right se text-muted">646万/棟</td></tr>
+<tr><td>棟あたり減価償却</td><td class="text-right text-muted">162万/棟</td><td class="text-right text-muted">111万/棟</td><td class="text-right text-muted">182万/棟</td><td class="text-right fy25 text-muted">222万/棟</td><td class="text-right proj text-muted">225万/棟</td><td class="text-right se text-muted">219万/棟</td><td class="text-right proj text-muted">245万/棟</td><td class="text-right proj text-muted">238万/棟</td><td class="text-right se text-muted">228万/棟</td><td class="text-right proj text-muted">232万/棟</td><td class="text-right proj text-muted">238万/棟</td><td class="text-right se text-muted">243万/棟</td><td class="text-right proj text-muted">244万/棟</td><td class="text-right proj text-muted">245万/棟</td><td class="text-right se text-muted">258万/棟</td></tr>
+<tr><td>棟あたり支払利息</td><td class="text-right text-muted">63万/棟</td><td class="text-right text-muted">43万/棟</td><td class="text-right text-muted">66万/棟</td><td class="text-right fy25 text-muted">93万/棟</td><td class="text-right proj text-muted">129万/棟</td><td class="text-right se text-muted">130万/棟</td><td class="text-right proj text-muted">153万/棟</td><td class="text-right proj text-muted">154万/棟</td><td class="text-right se text-muted">148万/棟</td><td class="text-right proj text-muted">151万/棟</td><td class="text-right proj text-muted">157万/棟</td><td class="text-right se text-muted">161万/棟</td><td class="text-right proj text-muted">159万/棟</td><td class="text-right proj text-muted">157万/棟</td><td class="text-right se text-muted">164万/棟</td></tr>
+<tr><td>棟あたり元金返済</td><td class="text-right text-muted">337万/棟</td><td class="text-right text-muted">358万/棟</td><td class="text-right text-muted">334万/棟</td><td class="text-right fy25 text-muted">307万/棟</td><td class="text-right proj text-muted">202万/棟</td><td class="text-right se text-muted">194万/棟</td><td class="text-right proj text-muted">228万/棟</td><td class="text-right proj text-muted">223万/棟</td><td class="text-right se text-muted">213万/棟</td><td class="text-right proj text-muted">216万/棟</td><td class="text-right proj text-muted">214万/棟</td><td class="text-right se text-muted">221万/棟</td><td class="text-right proj text-muted">226万/棟</td><td class="text-right proj text-muted">229万/棟</td><td class="text-right se text-muted">243万/棟</td></tr>
+<tr><td>棟あたり経常利益<br><span style="font-size:10px;font-weight:400;color:var(--text-light)">役員報酬控除後</span></td><td class="text-right text-muted">28万/棟</td><td class="text-right text-muted">13万/棟</td><td class="text-right text-muted">13万/棟</td><td class="text-right fy25 text-muted">26万/棟</td><td class="text-right proj text-muted">120万/棟</td><td class="text-right se text-muted">95万/棟</td><td class="text-right proj text-muted">100万/棟</td><td class="text-right proj text-muted">100万/棟</td><td class="text-right se text-muted">80万/棟</td><td class="text-right proj text-muted">67万/棟</td><td class="text-right proj text-muted">62万/棟</td><td class="text-right se text-muted">62万/棟</td><td class="text-right proj text-muted">57万/棟</td><td class="text-right proj text-muted">53万/棟</td><td class="text-right se text-muted">62万/棟</td></tr>
+<tr><td>棟あたりFCF<br><span style="font-size:10px;font-weight:400;color:var(--text-light)">役員報酬控除後</span></td><td class="text-right text-muted" style="color:var(--danger)">▲160万/棟</td><td class="text-right text-muted" style="color:var(--danger)">▲240万/棟</td><td class="text-right text-muted" style="color:var(--danger)">▲144万/棟</td><td class="text-right fy25 text-muted" style="color:var(--danger)">▲66万/棟</td><td class="text-right proj text-muted" style="color:var(--success)">107万/棟</td><td class="text-right se text-muted" style="color:var(--success)">91万/棟</td><td class="text-right proj text-muted" style="color:var(--success)">245万/棟</td><td class="text-right proj text-muted" style="color:var(--success)">479万/棟</td><td class="text-right se text-muted" style="color:var(--success)">71万/棟</td><td class="text-right proj text-muted" style="color:var(--success)">63万/棟</td><td class="text-right proj text-muted" style="color:var(--success)">181万/棟</td><td class="text-right se text-muted" style="color:var(--success)">184万/棟</td><td class="text-right proj text-muted" style="color:var(--success)">59万/棟</td><td class="text-right proj text-muted" style="color:var(--success)">53万/棟</td><td class="text-right se text-muted" style="color:var(--success)">203万/棟</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- B/S推移 -->
+    <div style="margin-top:16px">
+        <div class="card">
+            <div class="card-title">📋 B/S 推移サマリー（実績＋全期間目標） <span style="font-size:10px;color:var(--text-light);font-weight:400">★=ステージ末</span></div>
+            <div style="overflow-x:auto">
+                <table class="trend-table" style="min-width:1500px">
+                    <thead><tr>
+                        <th style="min-width:180px">指標（万円）</th>
+                        <th class="text-right">FY22</th><th class="text-right">FY23</th><th class="text-right">FY24</th>
+                        <th class="text-right fy25">FY25<br><span style="font-size:9px;font-weight:400">現在地</span></th>
+                        <th class="text-right proj">FY26予</th>
+                        <th class="text-right se">FY27目★<br><span style="font-size:9px">2ND末</span></th>
+                        <th class="text-right proj">FY28目</th><th class="text-right proj">FY29目</th>
+                        <th class="text-right se">FY30目★<br><span style="font-size:9px">3RD末</span></th>
+                        <th class="text-right proj">FY31目</th><th class="text-right proj">FY32目</th>
+                        <th class="text-right se">FY33目★<br><span style="font-size:9px">4TH末</span></th>
+                        <th class="text-right proj">FY34目</th><th class="text-right proj">FY35目</th>
+                        <th class="text-right se">FY36目★<br><span style="font-size:9px">5TH末</span></th>
+                    </tr></thead>
+                    <tbody>
+<!-- 総資産 -->
+<tr><td>総資産</td>
+  <td class="text-right">7,923</td><td class="text-right">19,874</td><td class="text-right">32,130</td><td class="text-right fy25">52,449</td>
+  <td class="text-right proj">62,000</td><td class="text-right se">79,000</td>
+  <td class="text-right proj">83,000</td><td class="text-right proj">85,000</td><td class="text-right se">97,000</td>
+  <td class="text-right proj">111,000</td><td class="text-right proj">121,000</td><td class="text-right se">126,000</td>
+  <td class="text-right proj">131,000</td><td class="text-right proj">136,000</td><td class="text-right se">126,000</td></tr>
+<!-- 棟あたり総資産 -->
+<tr style="background:#f0f4f8"><td style="padding-left:18px; color:var(--text-light)">└ 棟あたり総資産</td>
+  <td class="text-right text-muted">7,923万/棟</td><td class="text-right text-muted">9,937万/棟</td><td class="text-right text-muted">10,710万/棟</td><td class="text-right fy25 text-muted">10,490万/棟</td>
+  <td class="text-right proj text-muted">10,333万/棟</td><td class="text-right se text-muted">9,875万/棟</td>
+  <td class="text-right proj text-muted">10,375万/棟</td><td class="text-right proj text-muted">10,625万/棟</td><td class="text-right se text-muted">9,700万/棟</td>
+  <td class="text-right proj text-muted">9,250万/棟</td><td class="text-right proj text-muted">9,308万/棟</td><td class="text-right se text-muted">9,692万/棟</td>
+  <td class="text-right proj text-muted">9,357万/棟</td><td class="text-right proj text-muted">9,067万/棟</td><td class="text-right se text-muted">9,692万/棟</td></tr>
+<!-- 長期借入金 ※売却年は旧ローン返済で一時減少。FY29/33/36が顕著 -->
+<tr><td>長期借入金（金融機関）</td>
+  <td class="text-right">6,270</td><td class="text-right">16,975</td><td class="text-right">26,980</td><td class="text-right fy25">44,129</td>
+  <td class="text-right proj">52,000</td><td class="text-right se">68,000</td>
+  <td class="text-right proj">70,500</td><td class="text-right proj">68,600</td><td class="text-right se">85,000</td>
+  <td class="text-right proj">100,000</td><td class="text-right proj">107,000</td><td class="text-right se">109,000</td>
+  <td class="text-right proj">115,000</td><td class="text-right proj">120,000</td><td class="text-right se">90,000</td></tr>
+<!-- 親族借入金 -->
+<tr style="background:#f0f4f8"><td style="padding-left:18px; color:var(--text-light)">└ 親族借入金</td>
+  <td class="text-right text-muted">—</td><td class="text-right text-muted">—</td><td class="text-right text-muted">—</td><td class="text-right fy25">1,200</td>
+  <td class="text-right proj">1,000</td><td class="text-right se">800</td>
+  <td class="text-right proj">600</td><td class="text-right proj">400</td><td class="text-right se">200</td>
+  <td class="text-right proj text-muted">—</td><td class="text-right proj text-muted">—</td><td class="text-right se text-muted">—</td>
+  <td class="text-right proj text-muted">—</td><td class="text-right proj text-muted">—</td><td class="text-right se text-muted">—</td></tr>
+<!-- 役員借入金（FY28〜：役員報酬の還流分が毎年累積） -->
+<tr><td>役員借入金<br><span style="font-size:10px;font-weight:400;color:var(--text-light)">FY28〜役員報酬還流分を累積</span></td>
+  <td class="text-right">725</td><td class="text-right">1,955</td><td class="text-right">4,164</td><td class="text-right fy25">5,984</td>
+  <td class="text-right proj">8,000</td><td class="text-right se">10,000</td>
+  <td class="text-right proj">10,196</td><td class="text-right proj">10,362</td><td class="text-right se">11,029</td>
+  <td class="text-right proj">11,997</td><td class="text-right proj">12,948</td><td class="text-right se">13,789</td>
+  <td class="text-right proj">14,858</td><td class="text-right proj">16,120</td><td class="text-right se">16,796</td></tr>
+<!-- 純資産（FY25実績1,045万 + 当期純利益累積。役員報酬控除後のnetIncomeで計算） -->
+<tr><td>純資産</td>
+  <td class="text-right">915</td><td class="text-right">928</td><td class="text-right">951</td><td class="text-right fy25" style="color:var(--success)">1,045</td>
+  <td class="text-right proj" style="color:var(--success)">1,550</td><td class="text-right se" style="color:var(--success)">2,079</td>
+  <td class="text-right proj" style="color:var(--success)">3,899</td><td class="text-right proj" style="color:var(--success)">7,609</td><td class="text-right se" style="color:var(--success)">8,169</td>
+  <td class="text-right proj" style="color:var(--success)">8,729</td><td class="text-right proj" style="color:var(--success)">10,759</td><td class="text-right se" style="color:var(--success)">12,859</td>
+  <td class="text-right proj" style="color:var(--success)">13,419</td><td class="text-right proj" style="color:var(--success)">13,979</td><td class="text-right se" style="color:var(--success)">16,429</td></tr>
+<!-- 自己資本比率 -->
+<tr><td>自己資本比率（簿価）</td>
+  <td class="text-right">11.5%</td><td class="text-right">4.7%</td><td class="text-right">3.0%</td><td class="text-right fy25">2.0%</td>
+  <td class="text-right proj">2.5%</td><td class="text-right se">2.6%</td>
+  <td class="text-right proj">4.7%</td><td class="text-right proj">9.0%</td><td class="text-right se">8.4%</td>
+  <td class="text-right proj">7.9%</td><td class="text-right proj">8.9%</td><td class="text-right se">10.2%</td>
+  <td class="text-right proj">10.2%</td><td class="text-right proj">10.3%</td><td class="text-right se">13.0%</td></tr>
+<!-- 修正自己資本比率 -->
+<tr style="background:#f0f4ff"><td style="padding-left:18px; color:var(--primary)">└ 修正自己資本比率<br><span style="font-size:10px; color:var(--text-light); font-weight:400">純資産＋役員借入＋親族借入</span></td>
+  <td class="text-right" style="color:var(--primary)">20.7%</td><td class="text-right" style="color:var(--primary)">14.5%</td><td class="text-right" style="color:var(--primary)">15.9%</td><td class="text-right fy25" style="color:var(--primary); font-weight:800">15.7%</td>
+  <td class="text-right proj" style="color:var(--primary)">17.0%</td><td class="text-right se" style="color:var(--primary)">16.3%</td>
+  <td class="text-right proj" style="color:var(--primary)">17.7%</td><td class="text-right proj" style="color:var(--primary)">21.6%</td><td class="text-right se" style="color:var(--primary)">20.0%</td>
+  <td class="text-right proj" style="color:var(--primary)">18.7%</td><td class="text-right proj" style="color:var(--primary)">19.6%</td><td class="text-right se" style="color:var(--primary)">21.1%</td>
+  <td class="text-right proj" style="color:var(--primary)">21.6%</td><td class="text-right proj" style="color:var(--primary)">22.1%</td><td class="text-right se" style="color:var(--primary)">26.4%</td></tr>
+<!-- 現預金（CF整合値：opCF+売却収入+新規借入-物件取得費17%-元本返済） -->
+<tr><td>現預金</td>
+  <td class="text-right">174</td><td class="text-right">267</td><td class="text-right">416</td><td class="text-right fy25">1,879</td>
+  <td class="text-right proj">2,600</td><td class="text-right se">1,800</td>
+  <td class="text-right proj">4,100</td><td class="text-right proj">7,200</td><td class="text-right se">4,800</td>
+  <td class="text-right proj">2,600</td><td class="text-right proj">3,900</td><td class="text-right se">5,100</td>
+  <td class="text-right proj">5,000</td><td class="text-right proj">4,900</td><td class="text-right se">8,500</td></tr>
+<!-- 不動産資産簿価（土地簿価+建物純額：取得価額−累積減価償却） -->
+<tr style="background:#f5fff5"><td style="padding-left:4px; color:var(--success)">不動産資産簿価<br><span style="font-size:10px; color:var(--text-light); font-weight:400">土地＋建物純額（取得価額−累積減価償却）</span></td>
+  <td class="text-right" style="color:var(--success)">7,681</td><td class="text-right" style="color:var(--success)">18,938</td><td class="text-right" style="color:var(--success)">30,430</td><td class="text-right fy25" style="color:var(--success)">49,206</td>
+  <td class="text-right proj" style="color:var(--success)">57,857</td><td class="text-right se" style="color:var(--success)">76,107</td>
+  <td class="text-right proj" style="color:var(--success)">77,406</td><td class="text-right proj" style="color:var(--success)">74,689</td><td class="text-right se" style="color:var(--success)">92,409</td>
+  <td class="text-right proj" style="color:var(--success)">109,629</td><td class="text-right proj" style="color:var(--success)">116,737</td><td class="text-right se" style="color:var(--success)">117,740</td>
+  <td class="text-right proj" style="color:var(--success)">124,320</td><td class="text-right proj" style="color:var(--success)">130,650</td><td class="text-right se" style="color:var(--success)">112,663</td></tr>
+<!-- 債務償還年数 = 銀行借入 ÷ (経常利益×0.7+減価償却)。FY28〜は役員報酬控除後経常利益800万で固定 -->
+<tr><td>債務償還年数</td>
+  <td class="text-right">38.7年</td><td class="text-right">80.6年</td><td class="text-right">54.6年</td><td class="text-right fy25">36.6年</td>
+  <td class="text-right proj">28.6年</td><td class="text-right se">30.5年</td>
+  <td class="text-right proj">28.0年</td><td class="text-right proj">27.9年</td><td class="text-right se">29.9年</td>
+  <td class="text-right proj">29.9年</td><td class="text-right proj">29.2年</td><td class="text-right se">29.3年</td>
+  <td class="text-right proj">28.9年</td><td class="text-right proj">28.4年</td><td class="text-right se">23.0年</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div><!-- /container -->
+</div><!-- /fyAllView -->
+
+<!-- ===== 全FY共通 詳細セクション（FY選択時に表示） ===== -->
+<div id="fySharedSections" style="display:none">
+<div class="container">
+
+<div class="section" id="sec-loan">
+    <div class="section-title">
+        🏦 借入管理<span id="loanSectionDate" style="font-size:12px;font-weight:400;margin-left:8px"></span>
+        <span class="badge-title" id="loanSectionBadge"></span>
+    </div>
+    <div class="card">
+        <div class="card-title">📋 借入一覧</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>物件</th>
+                    <th>金融機関</th>
+                    <th class="text-right">残高（推定）</th>
+                    <th class="text-right">金利</th>
+                    <th class="text-right">月返済</th>
+                    <th class="text-right">残期間（推定）</th>
+                    <th>方式</th>
+                </tr>
+            </thead>
+            <tbody id="loanTableBody"></tbody>
+            <tfoot id="loanTableFoot">
+                <tr>
+                    <td colspan="2" class="fw-bold">合計</td>
+                    <td class="text-right" id="loanTotalBalance">—</td>
+                    <td class="text-right">—</td>
+                    <td class="text-right" id="loanTotalPayment">—</td>
+                    <td class="text-right">—</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+        <div style="margin-top:8px;padding:8px 10px;background:#f0f4ff;border-radius:6px;font-size:11px;color:#3730a3">
+            ※ FY25末（2026年3月）実績を基準に前後の残高を推定計算しています。
+        </div>
+    </div>
+    <div style="margin-top:16px">
+        <div class="card">
+            <div class="card-title">📊 金融機関別借入残高内訳</div>
+            <div class="grid-2">
+                <div>
+                    <div class="chart-wrap chart-wrap-md"><canvas id="loanPieChart"></canvas></div>
+                </div>
+                <div>
+                    <table>
+                        <thead>
+                            <tr><th>金融機関</th><th class="text-right">残高</th><th class="text-right">比率</th><th>対象物件</th></tr>
+                        </thead>
+                        <tbody id="loanBankTableBody"></tbody>
+                        <tfoot>
+                            <tr><td class="fw-bold">合計</td><td class="text-right fw-bold" id="loanBankTotal">—</td><td class="text-right fw-bold">100%</td><td></td></tr>
+                        </tfoot>
+                    </table>
+                    <div style="margin-top:16px;padding:12px;background:#f8fafc;border-radius:8px;font-size:11px">
+                        <div style="font-weight:700;margin-bottom:6px;color:var(--primary)">📌 融資取引行 ステータス</div>
+                        <div>✅ りそな銀行：固定金利確保、Candai は元金均等（早期返済型）</div>
+                        <div>✅ 横浜銀行：変動 + 3年固定、2行集中リスクあり → 分散検討を推奨</div>
+                        <div>⚠️ スルガ銀行：変動 2.25% は高め → 他行リファイナンスを検討</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div><!-- /container -->
+</div><!-- /fySharedSections -->
+
+<!-- ===== FY25 詳細セクション（?fy=25 のみ表示） ===== -->
+<div id="fyDetailSections" style="display:none">
+<div class="container">
+
+<!-- ========== FINANCIAL STATEMENTS ========== -->
+<div class="section" id="sec-bs">
+    <div class="section-title" id="secBSTitle">📋 財務諸表</div>
+    <div class="grid-2">
+        <div class="card">
+            <div class="card-title" id="secBSCardTitle">📐 貸借対照表（B/S）</div>
+            <div id="secBSGrid"></div>
+            <div style="margin-top:16px">
+                <div class="chart-wrap chart-wrap-sm"><canvas id="bsChart"></canvas></div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-title" id="secPLCardTitle">📈 損益計算書（P/L）</div>
+            <div id="secPLTableWrap" style="margin-bottom:14px;overflow-x:auto"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ========== LOAN MANAGEMENT ========== -->
+<!-- sec-loan は fySharedSections に移動 -->
+
+<!-- ========== C/F ========== -->
+<div class="section" id="sec-cf">
+    <div class="section-title" id="secCFTitle">💧 キャッシュフロー計算書</div>
+
+    <!-- 4期 C/F サマリー（実績） -->
+    <div class="card" style="margin-bottom:16px">
+        <div class="card-title">📋 C/F サマリー（実績 FY22〜FY25）</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>期</th>
+                    <th class="text-right" style="color:var(--success)">営業CF</th>
+                    <th class="text-right" style="color:var(--danger)">投資CF</th>
+                    <th class="text-right" style="color:var(--secondary)">財務CF</th>
+                    <th class="text-right">増減</th>
+                    <th class="text-right">期末現金</th>
+                    <th>投資主要取引</th>
+                </tr>
+            </thead>
+            <tbody id="cfTableBody"></tbody>
+        </table>
+    </div>
+
+    <!-- 選択FYの C/F 詳細（動的描画） -->
+    <div class="card" id="secCFDetailCard" style="margin-bottom:16px">
+        <div class="card-title" id="secCFDetailTitle">📊 期別 C/F 詳細</div>
+        <div id="secCFDetailBody"></div>
+    </div>
+
+    <!-- C/F チャート -->
+    <div class="grid-2">
+        <div class="card">
+            <div class="card-title">📊 営業/投資/財務 CF 推移（積上）</div>
+            <div class="chart-wrap chart-wrap-md"><canvas id="cfChart"></canvas></div>
+        </div>
+        <div class="card">
+            <div class="card-title">💰 期末現預金 推移</div>
+            <div class="chart-wrap chart-wrap-md"><canvas id="cfCashChart"></canvas></div>
+        </div>
+    </div>
+</div>
+
+<div class="section" id="sec-monthly">
+    <div class="section-title" id="secMonthlyTitle">📅 月次実績</div>
+
+    <div class="card" style="margin-bottom:16px">
+        <div class="card-title" id="secMonthlyChartTitle">📊 月次推移（売上高＋経常利益）</div>
+        <div class="chart-wrap" style="height:220px"><canvas id="monthlyPLChart"></canvas></div>
+        <div id="secMonthlyChartNote" style="margin-top:8px;font-size:10px;color:#94a3b8"></div>
+    </div>
+
+    <div class="grid-2">
+        <div class="card">
+            <div class="card-title" id="secMonthlyBreakdownTitle">📈 月次 費用内訳</div>
+            <div class="chart-wrap chart-wrap-md"><canvas id="monthlyRevenueBreakdownChart"></canvas></div>
+        </div>
+        <div class="card">
+            <div class="card-title" id="secMonthlyTableTitle">📋 月次 経常利益サマリー</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>月</th>
+                        <th class="text-right">売上高</th>
+                        <th class="text-right">経常利益</th>
+                        <th class="text-right">経常利益率</th>
+                    </tr>
+                </thead>
+                <tbody id="monthlyPLTableBody"></tbody>
+                <tfoot id="monthlyPLTableFoot"></tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+
+</div><!-- /container -->
+</div><!-- /fyDetailSections -->
+
+<div class="footer">
+    © 合同会社SANDS（代表：須藤朋子）　本資料は内部管理用です。外部への共有・転載・複製を禁じます。<br>
+    Generated by SANDS AI秘書（ベン） ｜ 2026-05-02
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+<script src="sands-data.js"></script>
+<script>
+// ---- URL param ----
+const _finFY = parseInt(new URLSearchParams(location.search).get('fy')) || null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    // タブのアクティブ状態
+    document.querySelectorAll('#fyTabBarFin a').forEach(a => {
+        const p = new URL(a.href, location.href).searchParams.get('fy');
+        const active = (p === null && !_finFY) || (p !== null && parseInt(p) === _finFY);
+        if (active) a.classList.add('active');
+    });
+
+    if (_finFY) {
+        // 単一年度ビュー
+        document.getElementById('fyAllView').style.display     = 'none';
+        document.getElementById('fySnapshotView').style.display = 'block';
+        renderFYSnapshot(_finFY);
+
+        // 全FY共通：借入管理セクション
+        document.getElementById('fySharedSections').style.display = 'block';
+        renderLoanSection(_finFY);
+
+        // 全FY：財務諸表・C/F・月次推移セクション
+        document.getElementById('fyDetailSections').style.display = 'block';
+        // snap-pl の簡易P/L・B/S表は sec-bs と重複するので非表示（全FY）
+        const snapTables = document.querySelector('#snap-pl .grid-2');
+        if (snapTables) snapTables.style.display = 'none';
+        // snap-loan も sec-cf と重複（全FY）
+        const snapLoan = document.getElementById('snap-loan');
+        if (snapLoan) snapLoan.style.display = 'none';
+        // セクションを動的に描画
+        renderBSSection(_finFY);
+        renderPLDetailSection(_finFY);
+        renderCFSection(_finFY);
+        renderMonthlySection(_finFY);
+    } else {
+        // 全期間ビュー（トレンドのみ）
+        renderPLTrendChart();
+        renderEquityTrendChart_();
+        renderBSMonthlyChart();   // 月次BS推移は全期間ページ
+    }
+});
+
+// =============================================
+// 借入管理セクション（全FY対応）
+// =============================================
+
+// FY25末（2026-03）を基準に、指定FY末の各物件ローン残高を推定
+function calcLoanBalanceAtFYEnd(prop, fy) {
+    // 竣工月チェック（存在しないFYはnull）
+    const cm = prop.structure?.match(/(\d{4})年(\d{1,2})月/);
+    if (!cm) return null;
+    const completionYYMM = `${cm[1]}-${cm[2].padStart(2,'0')}`;
+    const fyEndYYMM = `20${String(fy+1).padStart(2,'0')}-03`;
+    if (fyEndYYMM < completionYYMM) return null;  // まだ存在しない
+
+    // FY25末(2026-03)からの月数差（+= 未来, -= 過去）
+    const monthsDiff = (fy - 25) * 12;
+    const B = prop.loan.balance;          // FY25末残高（円）
+    const P = prop.loan.monthlyPayment;   // 月次P&I（円）
+    const r = prop.loan.rate / 100 / 12; // 月利
+
+    let balance;
+    if (prop.loan.type === '元金均等') {
+        // 毎月一定額の元金返済（近似）
+        const remainMonths = Math.round(prop.loan.remainYears * 12);
+        const monthlyPrincipal = B / remainMonths;
+        balance = B - monthlyPrincipal * monthsDiff;
+    } else {
+        // 元利均等（複利計算）
+        if (r === 0) {
+            balance = B - P * monthsDiff;
+        } else {
+            const factor = Math.pow(1 + r, monthsDiff);
+            balance = B * factor - P * (factor - 1) / r;
+        }
+    }
+    return Math.max(0, Math.round(balance));
+}
+
+// 残期間の推定（FY25末基準）
+function calcRemainYearsAtFYEnd(prop, fy) {
+    const base = prop.loan.remainYears;
+    return Math.max(0, Math.round((base - (fy - 25)) * 10) / 10);
+}
+
+let _loanPieChartInst = null;
+
+function renderLoanSection(fy) {
+    const fyEndLabel = `${2000 + fy + 1}年3月末`;
+    const isActual = fy <= 25;
+    const suffix = isActual ? '確定' : '推定';
+
+    // ヘッダー更新
+    document.getElementById('loanSectionDate').textContent = `（${fyEndLabel}）`;
+
+    // 各物件の残高計算
+    const tbody = document.getElementById('loanTableBody');
+    tbody.innerHTML = '';
+
+    let totalBalance = 0, totalPayment = 0;
+    const bankTotals = {};  // bank → balance
+
+    SANDS.properties.forEach(p => {
+        const bal = calcLoanBalanceAtFYEnd(p, fy);
+        if (bal === null) return;  // 未存在
+
+        const remainYears = calcRemainYearsAtFYEnd(p, fy);
+        totalBalance += bal;
+        totalPayment += p.loan.monthlyPayment;
+
+        // 銀行別集計
+        if (!bankTotals[p.loan.bank]) bankTotals[p.loan.bank] = { balance: 0, properties: [] };
+        bankTotals[p.loan.bank].balance += bal;
+        bankTotals[p.loan.bank].properties.push(p.nameShort);
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="fw-bold">${p.name}</td>
+            <td>${p.loan.bank}</td>
+            <td class="text-right">${Math.round(bal/10000).toLocaleString()}万</td>
+            <td class="text-right">${p.loan.rate.toFixed(3)}%
+                <span class="badge badge-${p.loan.rateType==='固定'?'blue':'orange'}" style="font-size:8px">${p.loan.rateType}</span>
+            </td>
+            <td class="text-right">${Math.round(p.loan.monthlyPayment/10000).toLocaleString()}万</td>
+            <td class="text-right">${remainYears > 0 ? remainYears + '年' : '—'}</td>
+            <td><span class="badge badge-gray">${p.loan.type}</span></td>`;
+        tbody.appendChild(tr);
+    });
+
+    // 運転資金ローン（FY25以降のみ）
+    if (fy >= 23) {
+        SANDS.workingLoans.forEach(l => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="text-muted">${l.name}</td>
+                <td class="text-muted">${l.bank}</td>
+                <td class="text-right text-muted">${Math.round(l.balance/10000)}万</td>
+                <td class="text-right text-muted">${l.rate.toFixed(2)}%</td>
+                <td class="text-right text-muted">${Math.round(l.monthly/10000*10)/10}万</td>
+                <td class="text-right text-muted">${l.remainYears}年</td>
+                <td class="text-muted"><span class="badge badge-gray">${l.type}</span></td>`;
+            tbody.appendChild(tr);
+            bankTotals[l.bank] = bankTotals[l.bank] || { balance: 0, properties: [] };
+            bankTotals[l.bank].balance += l.balance;
+            bankTotals[l.bank].properties.push('運転');
+            totalBalance += l.balance;
+            totalPayment += l.monthly;
+        });
+    }
+
+    // フッター更新
+    const balMan = Math.round(totalBalance/10000).toLocaleString();
+    const payMan = (Math.round(totalPayment/10000*10)/10).toLocaleString();
+    document.getElementById('loanTotalBalance').textContent = balMan + '万';
+    document.getElementById('loanTotalPayment').textContent = payMan + '万';
+    document.getElementById('loanSectionBadge').textContent =
+        `総借入 ${balMan}万 ｜ 月次返済 ${payMan}万（${suffix}）`;
+
+    // 銀行別テーブル更新
+    const bankTbody = document.getElementById('loanBankTableBody');
+    bankTbody.innerHTML = '';
+    Object.entries(bankTotals)
+        .sort((a,b) => b[1].balance - a[1].balance)
+        .forEach(([bank, {balance, properties}]) => {
+            const pct = (balance / totalBalance * 100).toFixed(1);
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${bank}</td>
+                <td class="text-right">${Math.round(balance/10000).toLocaleString()}万</td>
+                <td class="text-right">${pct}%</td>
+                <td style="font-size:11px">${properties.join(' + ')}</td>`;
+            bankTbody.appendChild(tr);
+        });
+    document.getElementById('loanBankTotal').textContent =
+        Math.round(totalBalance/10000).toLocaleString() + '万';
+
+    // 円グラフ更新
+    const bankNames   = Object.keys(bankTotals);
+    const bankBals    = bankNames.map(b => Math.round(bankTotals[b].balance/10000));
+    const bankColors  = ['#1a3d6e','#2e7cb8','#e74c3c','#f39c12','#7b2d8b'];
+    const ctx = document.getElementById('loanPieChart').getContext('2d');
+    if (_loanPieChartInst) _loanPieChartInst.destroy();
+    _loanPieChartInst = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: bankNames,
+            datasets: [{ data: bankBals, backgroundColor: bankColors.slice(0, bankNames.length), borderWidth: 2 }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } },
+                tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.raw.toLocaleString()}万円` } }
+            }
+        }
+    });
+}
+
+// =============================================
+// 財務諸表セクション（全FY対応）
+// =============================================
+
+// FY25確定値の詳細B/S（freee確定）
+const FY25_BS_DETAIL = {
+    currentAssets: { total: 1879, items: [['現金及び預金', 1879]] },
+    fixedAssets:   { total: 50549, items: [
+        ['土地', 22717], ['建物（償却後）', 26489],
+        ['付属設備・備品ほか', 290], ['差入保証金・前払費用', 1152]
+    ]},
+    deferredAssets:  21,
+    currentLiab:   { total: 75, items: [['未払金・未払税等・預り金', 75]] },
+    longLiab:      { total: 51328, items: [
+        ['長期借入金（金融機関）', 44129], ['役員借入金', 5979],
+        ['長期借入金（親族）', 1200], ['預り敷金', 21]
+    ]},
+    equityDetail:  { items: [['資本金', 900], ['利益剰余金', 145]] }
+};
+
+function renderBSSection(fy) {
+    const bs = SANDS.bsHistory.find(d => { const m = d.year.match(/FY(\d+)/); return m && +m[1] === fy; });
+    if (!bs) {
+        document.getElementById('secBSGrid').innerHTML = '<p style="padding:14px;color:#94a3b8;font-size:12px">B/Sデータなし</p>';
+        return;
+    }
+    const isFY25 = fy === 25;
+    const isActual = fy <= 25;
+    const monthEnd = `${2000+fy+1}年3月末`;
+    document.getElementById('secBSTitle').innerHTML =
+        `📋 財務諸表 <span style="font-size:12px;color:#64748b;margin-left:8px">FY${fy} ${isActual?'確定':'目標'}</span>`;
+    document.getElementById('secBSCardTitle').textContent = `📐 貸借対照表（B/S） ${monthEnd}`;
+    document.getElementById('secPLCardTitle').textContent = `📈 損益計算書（P/L） FY${fy}`;
+
+    const fmtMan = v => (v != null) ? v.toLocaleString() + '万' : '—';
+    const cash = bs.cash || 0;
+    const fixedAssets = bs.totalAssets - cash;
+    const longLoan  = bs.longTermLoan;
+    const officer   = bs.officerLoan;
+    const family    = bs.familyLoan || 0;
+    const equity    = bs.equity;
+
+    let html = '<div class="bs-grid">';
+    // 資産
+    html += '<div class="bs-block"><h4>資産の部</h4>';
+    if (isFY25) {
+        const d = FY25_BS_DETAIL;
+        html += `<div class="bs-row"><span>【流動資産】</span><span class="fw-bold">${fmtMan(d.currentAssets.total)}</span></div>`;
+        d.currentAssets.items.forEach(([k,v]) => html += `<div class="bs-row sub"><span>${k}</span><span>${fmtMan(v)}</span></div>`);
+        html += `<div class="bs-row"><span>【固定資産】</span><span class="fw-bold">${fmtMan(d.fixedAssets.total)}</span></div>`;
+        d.fixedAssets.items.forEach(([k,v]) => html += `<div class="bs-row sub"><span>${k}</span><span>${fmtMan(v)}</span></div>`);
+        html += `<div class="bs-row"><span>【繰延資産】</span><span>${fmtMan(d.deferredAssets)}</span></div>`;
+    } else {
+        html += `<div class="bs-row"><span>【流動資産】</span><span class="fw-bold">${fmtMan(cash)}</span></div>`;
+        html += `<div class="bs-row sub"><span>現金及び預金</span><span>${fmtMan(cash)}</span></div>`;
+        html += `<div class="bs-row"><span>【固定資産】</span><span class="fw-bold">${fmtMan(fixedAssets)}</span></div>`;
+        html += `<div class="bs-row sub" style="color:#94a3b8"><span>土地・建物等</span><span>—</span></div>`;
+    }
+    html += `<div class="bs-row total"><span>資産合計</span><span>${fmtMan(bs.totalAssets)}</span></div>`;
+    html += '</div>';
+
+    // 負債・純資産
+    html += '<div class="bs-block"><h4>負債・純資産の部</h4>';
+    if (isFY25) {
+        const d = FY25_BS_DETAIL;
+        html += `<div class="bs-row"><span>【流動負債】</span><span class="fw-bold">${fmtMan(d.currentLiab.total)}</span></div>`;
+        d.currentLiab.items.forEach(([k,v]) => html += `<div class="bs-row sub"><span>${k}</span><span>${fmtMan(v)}</span></div>`);
+        html += `<div class="bs-row"><span>【固定負債】</span><span class="fw-bold">${fmtMan(d.longLiab.total)}</span></div>`;
+        d.longLiab.items.forEach(([k,v]) => html += `<div class="bs-row sub"><span>${k}</span><span>${fmtMan(v)}</span></div>`);
+        html += `<div class="bs-row"><span>【純資産】</span><span class="fw-bold text-success">${fmtMan(equity)}</span></div>`;
+        d.equityDetail.items.forEach(([k,v]) => html += `<div class="bs-row sub"><span>${k}</span><span>${fmtMan(v)}</span></div>`);
+    } else {
+        const totalLiab = longLoan + officer + family;
+        html += `<div class="bs-row"><span>【固定負債】</span><span class="fw-bold">${fmtMan(totalLiab)}</span></div>`;
+        html += `<div class="bs-row sub"><span>長期借入金（金融機関）</span><span>${fmtMan(longLoan)}</span></div>`;
+        html += `<div class="bs-row sub"><span>役員借入金</span><span>${fmtMan(officer)}</span></div>`;
+        if (family > 0) html += `<div class="bs-row sub"><span>長期借入金（親族）</span><span>${fmtMan(family)}</span></div>`;
+        html += `<div class="bs-row"><span>【純資産】</span><span class="fw-bold text-success">${fmtMan(equity)}</span></div>`;
+    }
+    html += `<div class="bs-row total"><span>負債純資産合計</span><span>${fmtMan(bs.totalAssets)}</span></div>`;
+    html += '</div></div>';
+
+    document.getElementById('secBSGrid').innerHTML = html;
+}
+
+// P/L 多年比較表（FY22〜FY27）+ チャート
+function renderPLDetailSection(fy) {
+    const fys = [22, 23, 24, 25, 26, 27];
+    const data = fys.map(f => SANDS.plHistory.find(d => { const m = d.year.match(/FY(\d+)/); return m && +m[1] === f; }));
+
+    let html = '<table style="width:100%;font-size:12px">';
+    html += '<thead><tr><th style="text-align:left;padding:6px 4px">科目</th>';
+    fys.forEach(f => {
+        const isCur = f === fy;
+        html += `<th class="text-right" style="padding:6px 4px${isCur ? ';background:#dbeafe;color:#1a3d6e':''}">FY${f}${isCur?'★':''}</th>`;
+    });
+    html += '</tr></thead><tbody>';
+
+    const rows = [
+        ['売上高（百万）', d => d?.revenue?.toFixed(2)],
+        ['経常利益（百万）', d => d?.ordinary?.toFixed(2)],
+        ['経常利益率', d => d?.ordinaryRate ? d.ordinaryRate.toFixed(1)+'%' : '—'],
+        ['営業利益（百万）', d => d?.operating?.toFixed(2) || '—'],
+        ['支払利息（百万）', d => d?.interest?.toFixed(2) || '—'],
+        ['減価償却（百万）', d => d?.depreciation?.toFixed(2) || '—'],
+        ['みなし経常利益', d => d ? ((d.ordinary + (d.officerSalary||0)).toFixed(2)) : '—'],
+        ['実質CF（百万）', d => d?.realCF?.toFixed(2) || '—'],
+        ['FCF（百万）', d => d?.fcf != null ? d.fcf.toFixed(2) : '—'],
+    ];
+
+    rows.forEach(([label, getter]) => {
+        html += `<tr><td style="padding:6px 4px;color:#374151">${label}</td>`;
+        data.forEach((d, i) => {
+            const isCur = fys[i] === fy;
+            const v = getter(d);
+            html += `<td class="text-right" style="padding:6px 4px${isCur?';background:#f0f8ff;font-weight:700':''}">${v ?? '—'}</td>`;
+        });
+        html += '</tr>';
+    });
+    html += '</tbody></table>';
+
+    document.getElementById('secPLTableWrap').innerHTML = html;
+
+    // bsChart（B/S 内訳積上）— FY25のみ詳細、それ以外は概略
+    if (typeof renderBSChart === 'function' && fy === 25) {
+        renderBSChart();
+    } else {
+        const ctx = document.getElementById('bsChart')?.getContext('2d');
+        if (ctx) {
+            const bs = SANDS.bsHistory.find(d => { const m = d.year.match(/FY(\d+)/); return m && +m[1] === fy; });
+            if (bs && window._bsChartInst) window._bsChartInst.destroy();
+            if (bs) {
+                window._bsChartInst = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['資産', '負債・純資産'],
+                        datasets: [
+                            { label: '現預金', data: [bs.cash||0, 0], backgroundColor: '#5dade2' },
+                            { label: 'その他資産', data: [bs.totalAssets-(bs.cash||0), 0], backgroundColor: '#1a3d6e' },
+                            { label: '長期借入金', data: [0, bs.longTermLoan], backgroundColor: '#e74c3c' },
+                            { label: '役員・親族借入', data: [0, bs.officerLoan + (bs.familyLoan||0)], backgroundColor: '#e67e22' },
+                            { label: '純資産', data: [0, bs.equity], backgroundColor: '#27ae60' },
+                        ]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 9 }, padding: 6 } } },
+                        scales: { x: { stacked: true }, y: { stacked: true, ticks: { callback: v => v.toLocaleString()+'万' } } }
+                    }
+                });
+            }
+        }
+    }
+}
+
+// =============================================
+// C/F セクション（全FY対応）
+// =============================================
+function renderCFSection(fy) {
+    // 4期サマリー（実績）テーブルは常に全期表示
+    if (typeof renderCFTable === 'function') renderCFTable();
+    if (typeof renderCFChart === 'function') renderCFChart();
+    if (typeof renderCFWaterfall === 'function') renderCFWaterfall();
+
+    // 選択FYの詳細（cashFlowHistory にあれば詳細、なければ plHistory から推定）
+    const cf = SANDS.cashFlowHistory?.find(d => { const m = d.year.match(/FY(\d+)/); return m && +m[1] === fy; });
+    const pl = SANDS.plHistory.find(d => { const m = d.year.match(/FY(\d+)/); return m && +m[1] === fy; });
+
+    document.getElementById('secCFDetailTitle').textContent = `📊 FY${fy} C/F 詳細`;
+    const detailEl = document.getElementById('secCFDetailBody');
+
+    if (cf) {
+        const fmtMan = v => v.toLocaleString() + '万';
+        const sign = v => v >= 0 ? '+' + fmtMan(v) : fmtMan(v);
+        detailEl.innerHTML = `
+            <table style="width:100%;font-size:12px">
+                <tr><td style="padding:6px 8px;color:#64748b">期首現預金</td><td style="text-align:right;padding:6px 8px">${fmtMan(cf.cashStart)}</td></tr>
+                <tr><td style="padding:6px 8px;color:var(--success)">営業CF（純利益＋償却）</td><td style="text-align:right;padding:6px 8px;color:var(--success);font-weight:700">${sign(cf.opCF)}</td></tr>
+                <tr><td style="padding:6px 8px;color:var(--danger)">投資CF</td><td style="text-align:right;padding:6px 8px;color:var(--danger);font-weight:700">${sign(cf.invCF)}</td></tr>
+                <tr><td style="padding:6px 8px;color:var(--secondary)">財務CF（借入＋増資）</td><td style="text-align:right;padding:6px 8px;color:var(--secondary);font-weight:700">${sign(cf.finCF)}</td></tr>
+                <tr><td style="padding:6px 8px;font-weight:700;border-top:2px solid #e2e8f0">期末現預金</td><td style="text-align:right;padding:6px 8px;font-weight:700;border-top:2px solid #e2e8f0">${fmtMan(cf.cashEnd)}</td></tr>
+                <tr><td colspan="2" style="padding:6px 8px;font-size:10px;color:#64748b">${cf.invNote}</td></tr>
+            </table>`;
+    } else if (pl) {
+        const fmtMan = v => Math.round(v*100).toLocaleString()+'万';
+        detailEl.innerHTML = `
+            <div style="padding:10px;background:#fff7ed;border-radius:8px;font-size:11px;color:#92400e;margin-bottom:12px">
+                💡 FY${fy} は計画値のため詳細CFは未確定。P/L由来の推定値を表示。
+            </div>
+            <table style="width:100%;font-size:12px">
+                <tr><td style="padding:6px 8px;color:var(--success)">実質CF（純利益＋償却）</td><td style="text-align:right;padding:6px 8px;color:var(--success);font-weight:700">+${fmtMan(pl.realCF)}</td></tr>
+                <tr><td style="padding:6px 8px;color:#374151">FCF（元金返済後）</td><td style="text-align:right;padding:6px 8px;font-weight:700;color:${pl.fcf>=0?'var(--success)':'var(--danger)'}">${pl.fcf>=0?'+':''}${fmtMan(pl.fcf)}</td></tr>
+                <tr><td style="padding:6px 8px;color:#374151">支払利息</td><td style="text-align:right;padding:6px 8px;color:var(--danger)">△${fmtMan(pl.interest)}</td></tr>
+                <tr><td style="padding:6px 8px;color:#374151">減価償却費</td><td style="text-align:right;padding:6px 8px">${fmtMan(pl.depreciation)}</td></tr>
+            </table>`;
+    } else {
+        detailEl.innerHTML = '<p style="padding:12px;color:#94a3b8;font-size:12px">データなし</p>';
+    }
+}
+
+// =============================================
+// 月次推移セクション（全FY対応）
+// =============================================
+function renderMonthlySection(fy) {
+    const fyStart = `20${String(fy).padStart(2,'0')}-04`;
+    const fyEnd   = `20${String(fy+1).padStart(2,'0')}-03`;
+    const monthly = (SANDS.plMonthly || []).filter(d => d.month >= fyStart && d.month <= fyEnd);
+
+    document.getElementById('secMonthlyTitle').innerHTML =
+        `📅 月次実績 <span style="font-size:12px;color:#64748b;margin-left:8px">FY${fy}（${fyStart.replace('-','年')}〜${fyEnd.replace('-','年')}）</span>`;
+    document.getElementById('secMonthlyChartTitle').textContent = `📊 FY${fy} 売上高＋経常利益 月次推移`;
+    document.getElementById('secMonthlyBreakdownTitle').textContent = `📈 FY${fy} 月次 費用内訳`;
+    document.getElementById('secMonthlyTableTitle').textContent = `📋 FY${fy} 月次 経常利益サマリー`;
+
+    if (!monthly.length) {
+        const note = document.getElementById('secMonthlyChartNote');
+        if (note) note.innerHTML = `📥 FY${fy} の月次データがありません。<a href="import.html" style="color:#1a3d6e;font-weight:700">データ取込</a> でインポートしてください。`;
+        // Clear charts
+        ['monthlyPLChart','monthlyRevenueBreakdownChart'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                const ctx = el.getContext('2d');
+                ctx.clearRect(0, 0, el.width, el.height);
+            }
+        });
+        document.getElementById('monthlyPLTableBody').innerHTML = '<tr><td colspan="4" style="padding:14px;text-align:center;color:#94a3b8">データなし</td></tr>';
+        document.getElementById('monthlyPLTableFoot').innerHTML = '';
+        return;
+    }
+    document.getElementById('secMonthlyChartNote').innerHTML = '';
+
+    // 月次P/Lチャート
+    const ctx = document.getElementById('monthlyPLChart').getContext('2d');
+    if (window._monthlyPLChartInst) window._monthlyPLChartInst.destroy();
+    const labels = monthly.map(d => "'"+d.month.slice(2).replace('-','/'));
+    window._monthlyPLChartInst = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [
+                { label: '売上高（万）', data: monthly.map(d => Math.round(d.revenue/10000)),
+                  backgroundColor: '#2e7cb888', borderRadius: 3, yAxisID: 'y' },
+                { label: '経常利益（万）', data: monthly.map(d => Math.round((d.ordinaryProfit||0)/10000)),
+                  type: 'line', borderColor: '#e8a020', backgroundColor: 'rgba(232,160,32,0.15)',
+                  pointRadius: 3, tension: 0.3, fill: true, yAxisID: 'y2' },
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position: 'top', labels: { boxWidth: 10, font: { size: 10 } } } },
+            scales: {
+                x: { ticks: { font: { size: 9 } } },
+                y: { position: 'left', ticks: { callback: v => v + '万', font: { size: 10 } }, beginAtZero: true },
+                y2: { position: 'right', ticks: { callback: v => v + '万', font: { size: 10 } }, grid: { drawOnChartArea: false } }
+            }
+        }
+    });
+
+    // 費用内訳チャート（簡易）
+    if (typeof renderMonthlyRevenueBreakdownChart === 'function') {
+        renderMonthlyRevenueBreakdownChart();
+    }
+
+    // 月次テーブル
+    const tbody = document.getElementById('monthlyPLTableBody');
+    const tfoot = document.getElementById('monthlyPLTableFoot');
+    let totalRev = 0, totalOrd = 0;
+    tbody.innerHTML = monthly.map(d => {
+        const rev = Math.round(d.revenue/10000);
+        const ord = Math.round((d.ordinaryProfit||0)/10000);
+        totalRev += rev; totalOrd += ord;
+        const rate = rev > 0 ? (ord/rev*100).toFixed(1) : '—';
+        return `<tr>
+            <td style="padding:6px 8px">${d.month.slice(2)}</td>
+            <td style="text-align:right;padding:6px 8px">${rev.toLocaleString()}万</td>
+            <td style="text-align:right;padding:6px 8px;color:${ord>=0?'var(--success)':'var(--danger)'}">${ord>=0?'+':''}${ord.toLocaleString()}万</td>
+            <td style="text-align:right;padding:6px 8px">${rate}${rate!=='—'?'%':''}</td>
+        </tr>`;
+    }).join('');
+    const totalRate = totalRev > 0 ? (totalOrd/totalRev*100).toFixed(1) + '%' : '—';
+    tfoot.innerHTML = `<tr style="font-weight:700;border-top:2px solid #1a3d6e">
+        <td style="padding:6px 8px">通期合計</td>
+        <td style="text-align:right;padding:6px 8px">${totalRev.toLocaleString()}万</td>
+        <td style="text-align:right;padding:6px 8px;color:${totalOrd>=0?'var(--success)':'var(--danger)'}">${totalOrd>=0?'+':''}${totalOrd.toLocaleString()}万</td>
+        <td style="text-align:right;padding:6px 8px">${totalRate}</td>
+    </tr>`;
+}
+
+// P/L推移チャート（全期間用）
+function renderPLTrendChart() {
+    const el = document.getElementById('plChartTrend'); if (!el) return;
+    const d = SANDS.plHistory;
+    const isProj = x => x.year.includes('予') || x.year.includes('目');
+    new Chart(el.getContext('2d'), {
+        type: 'bar',
+        plugins: [stageBandsPlugin],
+        data: {
+            labels: d.map(x => x.year),
+            datasets: [
+                { label: '売上高（百万）', data: d.map(x => x.revenue),
+                  backgroundColor: d.map(x => isProj(x) ? 'rgba(26,61,110,0.3)' : '#2e7cb8'), yAxisID: 'y', borderRadius: 3 },
+                { label: 'みなし経常利益（百万）', data: d.map(x => x.ordinary + (x.officerSalary||0)),
+                  type: 'line', borderColor: '#27ae60', yAxisID: 'y', tension: 0.3, pointRadius: 3, fill: false,
+                  segment: { borderDash: ctx => isProj(d[ctx.p1DataIndex]) ? [5,4] : undefined } },
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: { size: 10 } } } },
+            scales: {
+                x: { ticks: { font: { size: 9 } } },
+                y: { ticks: { callback: v => v + 'M', font: { size: 10 } } }
+            }
+        }
+    });
+}
+
+// 資産・借入・純資産推移（全期間用）
+function renderEquityTrendChart_() {
+    const el = document.getElementById('equityChartTrend'); if (!el) return;
+    const bs = SANDS.bsHistory;
+    const man2oku = v => Math.round(v/1000)/10;
+    const boundary = bs.findIndex(d => d.stage);
+    const dashProj = ctx => ctx.p0DataIndex >= boundary - 1 ? [6,4] : undefined;
+    new Chart(el.getContext('2d'), {
+        type: 'line',
+        plugins: [stageBandsPlugin],
+        data: {
+            labels: bs.map(d => d.year),
+            datasets: [
+                { label: '不動産資産（億）', data: bs.map(d => man2oku(d.totalAssets)),
+                  borderColor: '#2e7cb8', backgroundColor: 'rgba(46,124,184,0.07)', fill: true, tension: 0.3, pointRadius: 3,
+                  segment: { borderDash: dashProj } },
+                { label: '借入残高（億）',   data: bs.map(d => man2oku(d.longTermLoan + d.officerLoan + (d.familyLoan||0))),
+                  borderColor: '#e74c3c', backgroundColor: 'rgba(231,76,60,0.07)',  fill: true, tension: 0.3, pointRadius: 3,
+                  segment: { borderDash: dashProj } },
+                { label: '純資産（億）',     data: bs.map(d => man2oku(d.equity)),
+                  borderColor: '#27ae60', backgroundColor: 'rgba(39,174,96,0.1)',   fill: true, tension: 0.3, pointRadius: 3, borderWidth: 3,
+                  segment: { borderDash: dashProj } },
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } },
+                tooltip: { callbacks: { footer: items => items[0].dataIndex < boundary ? '実績値' : '計画値' } }
+            },
+            scales: {
+                x: { ticks: { font: { size: 10 }, maxRotation: 45 } },
+                y: { ticks: { callback: v => v + '億', font: { size: 10 } } }
+            }
+        }
+    });
+}
+
+// ---- FY25 月次P/Lチャート（FY25の12ヶ月のみ）----
+function renderFY25MonthlyChart() {
+    const el = document.getElementById('monthlyPLChart'); if (!el) return;
+    // FY25 = 2025-04 〜 2026-03
+    const raw = (SANDS.plMonthly || []).filter(d => {
+        const [y, m] = d.month.split('-').map(Number);
+        return (y === 2025 && m >= 4) || (y === 2026 && m <= 3);
+    });
+    if (!raw.length) {
+        el.parentElement.insertAdjacentHTML('beforeend',
+            '<div style="padding:16px;color:#94a3b8;text-align:center;font-size:12px">月次データなし（取込ページからインポートしてください）</div>');
+        return;
+    }
+    const labels = raw.map(d => "'" + d.month.slice(2).replace('-', '/'));
+    new Chart(el.getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [
+                { label: '売上高（万）', data: raw.map(d => Math.round(d.revenue/10000)),
+                  backgroundColor: '#2e7cb888', borderRadius: 3, yAxisID: 'y' },
+                { label: '経常利益（万）', data: raw.map(d => Math.round((d.ordinaryProfit||0)/10000)),
+                  type: 'line', borderColor: '#27ae60', borderWidth: 2,
+                  pointRadius: 4, pointBackgroundColor: '#27ae60', yAxisID: 'y', tension: 0.3, fill: false },
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: { size: 10 } } } },
+            scales: {
+                x: { ticks: { font: { size: 10 } } },
+                y: { ticks: { callback: v => v + '万', font: { size: 10 } } }
+            }
+        }
+    });
+}
+
+// ---- 年度スナップショット ----
+function renderFYSnapshot(fy) {
+    const pl = SANDS.plHistory.find(d => { const m = d.year.match(/FY(\d+)/); return m && parseInt(m[1]) === fy; });
+    const bs = SANDS.bsHistory.find(d => { const m = d.year.match(/FY(\d+)/); return m && parseInt(m[1]) === fy; });
+    const cf = SANDS.cashFlowHistory?.find(d => { const m = d.year.match(/FY(\d+)/); return m && parseInt(m[1]) === fy; });
+    if (!pl && !bs) { document.getElementById('snapTitle').textContent = `FY${fy} のデータはありません`; return; }
+
+    const isActual = pl && !pl.stage;
+    const label    = pl ? pl.year : `FY${fy}`;
+    const period   = pl ? pl.period : '';
+    const tag      = isActual ? '確定' : '予測';
+    document.getElementById('snapTitle').innerHTML =
+        `📊 ${label} ${period} <span class="badge-title">${tag}</span>`;
+
+    // KPIカード
+    const rev  = pl ? Math.round(pl.revenue * 100) : null;
+    const ord  = pl ? Math.round((pl.ordinary + (pl.officerSalary||0)) * 100) : null;
+    const eq   = bs ? bs.equity : null;
+    const debt = bs ? bs.longTermLoan + bs.officerLoan + (bs.familyLoan||0) : null;
+    const debtRatio = (bs && bs.totalAssets) ? ((debt/bs.totalAssets)*100).toFixed(1) : null;
+    const units = pl ? pl.units : null;
+
+    // 表示用ヘルパー（万円単位の値をカンマ区切りで）
+    const m = (v) => v != null ? Math.round(v).toLocaleString() + '万' : '—';
+    // plHistory は百万円 → ×100 で万円に変換
+    const pm = (v) => v != null ? Math.round(v * 100).toLocaleString() + '万' : '—';
+
+    document.getElementById('snapKpiGrid').innerHTML = `
+        <div class="snap-kpi">
+            <div class="snap-kpi-label">💰 年間売上高</div>
+            <div class="snap-kpi-value">${pm(pl?.revenue)}</div>
+            <div class="snap-kpi-sub">${pl?.ordinaryRate?.toFixed(1) ?? '—'}% 経常利益率</div>
+        </div>
+        <div class="snap-kpi">
+            <div class="snap-kpi-label">📊 みなし経常利益</div>
+            <div class="snap-kpi-value" style="color:${ord>0?'#27ae60':'#e74c3c'}">${ord !== null ? ord.toLocaleString()+'万' : '—'}</div>
+            <div class="snap-kpi-sub">役員報酬前 利益</div>
+        </div>
+        <div class="snap-kpi">
+            <div class="snap-kpi-label">🏦 純資産</div>
+            <div class="snap-kpi-value">${m(eq)}</div>
+            <div class="snap-kpi-sub">自己資本比率 ${(bs && bs.totalAssets) ? ((eq/bs.totalAssets)*100).toFixed(1)+'%' : '—'}</div>
+        </div>
+        <div class="snap-kpi">
+            <div class="snap-kpi-label">📉 借入残高合計</div>
+            <div class="snap-kpi-value">${m(debt)}</div>
+            <div class="snap-kpi-sub">負債比率 ${debtRatio ?? '—'}%</div>
+        </div>
+        <div class="snap-kpi">
+            <div class="snap-kpi-label">🏘️ 管理戸数</div>
+            <div class="snap-kpi-value">${units ?? '—'}戸</div>
+            <div class="snap-kpi-sub">FY${fy} 末時点</div>
+        </div>
+        <div class="snap-kpi">
+            <div class="snap-kpi-label">🔄 実質CF（非現金）</div>
+            <div class="snap-kpi-value">${pm(pl?.realCF)}</div>
+            <div class="snap-kpi-sub">純利益 + 減価償却</div>
+        </div>
+        <div class="snap-kpi">
+            <div class="snap-kpi-label">💵 フリーCF</div>
+            <div class="snap-kpi-value" style="color:${pl&&pl.fcf>0?'#27ae60':'#e74c3c'}">${pl ? (pl.fcf>0?'+':'')+Math.round(pl.fcf*100).toLocaleString()+'万' : '—'}</div>
+            <div class="snap-kpi-sub">投資後CF</div>
+        </div>
+        <div class="snap-kpi">
+            <div class="snap-kpi-label">📅 総資産</div>
+            <div class="snap-kpi-value">${m(bs?.totalAssets)}</div>
+            <div class="snap-kpi-sub">期末B/S</div>
+        </div>
+    `;
+
+    // P/Lテーブル
+    if (pl) {
+        const os = pl.officerSalary || 0;
+        document.getElementById('snapPLTable').innerHTML = `
+            <tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px;width:140px">売上高</th>
+                <td style="padding:6px 8px;text-align:right;font-weight:700">${pm(pl.revenue)}</td></tr>
+            <tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px">支払利息</th>
+                <td style="padding:6px 8px;text-align:right;color:#e74c3c">△${pm(pl.interest)}</td></tr>
+            <tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px">減価償却費</th>
+                <td style="padding:6px 8px;text-align:right;color:#e74c3c">△${pm(pl.depreciation)}</td></tr>
+            <tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px">みなし経常利益</th>
+                <td style="padding:6px 8px;text-align:right;font-weight:700;color:#27ae60">${Math.round((pl.ordinary+os)*100).toLocaleString()}万円</td></tr>
+            ${os>0?`<tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px">　うち役員報酬</th>
+                <td style="padding:6px 8px;text-align:right;color:#b45309">△${pm(os)}</td></tr>`:''}
+            <tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px">経常利益</th>
+                <td style="padding:6px 8px;text-align:right;font-weight:700">${pm(pl.ordinary)}</td></tr>
+            <tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px">当期純利益</th>
+                <td style="padding:6px 8px;text-align:right;font-weight:700">${pm(pl.netIncome)}</td></tr>
+            <tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px">実質CF</th>
+                <td style="padding:6px 8px;text-align:right;color:#2e7cb8;font-weight:700">+${pm(pl.realCF)}</td></tr>
+        `;
+    }
+
+    // B/Sテーブル
+    if (bs) {
+        document.getElementById('snapBSTable').innerHTML = `
+            <tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px;width:130px">総資産</th>
+                <td style="padding:6px 8px;text-align:right;font-weight:700">${m(bs.totalAssets)}</td></tr>
+            <tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px">　うち現預金</th>
+                <td style="padding:6px 8px;text-align:right">${m(bs.cash||0)}</td></tr>
+            <tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px">長期借入金</th>
+                <td style="padding:6px 8px;text-align:right;color:#e74c3c">${m(bs.longTermLoan)}</td></tr>
+            <tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px">役員借入金</th>
+                <td style="padding:6px 8px;text-align:right;color:#e74c3c">${m(bs.officerLoan)}</td></tr>
+            ${bs.familyLoan?`<tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px">親族借入金</th>
+                <td style="padding:6px 8px;text-align:right;color:#e74c3c">${m(bs.familyLoan)}</td></tr>`:''}
+            <tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px">純資産</th>
+                <td style="padding:6px 8px;text-align:right;font-weight:700;color:#27ae60">${m(bs.equity)}</td></tr>
+            <tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px">自己資本比率</th>
+                <td style="padding:6px 8px;text-align:right">${((bs.equity/bs.totalAssets)*100).toFixed(1)}%</td></tr>
+        `;
+    }
+
+    // C/F / 指標テーブル
+    if (cf) {
+        document.getElementById('snapCFTable').innerHTML = `
+            <tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px;width:130px">期首現預金</th>
+                <td style="padding:6px 8px;text-align:right">${cf.cashStart}万円</td></tr>
+            <tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px">営業CF</th>
+                <td style="padding:6px 8px;text-align:right;color:#27ae60">+${cf.opCF}万円</td></tr>
+            <tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px">投資CF</th>
+                <td style="padding:6px 8px;text-align:right;color:#e74c3c">${cf.invCF}万円</td></tr>
+            <tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px">財務CF</th>
+                <td style="padding:6px 8px;text-align:right;color:#2e7cb8">+${cf.finCF}万円</td></tr>
+            <tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px">期末現預金</th>
+                <td style="padding:6px 8px;text-align:right;font-weight:700">${cf.cashEnd}万円</td></tr>
+            <tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px">投資内容</th>
+                <td style="padding:6px 8px;font-size:10px;color:#64748b">${cf.invNote}</td></tr>
+        `;
+    } else if (bs) {
+        document.getElementById('snapCFTable').innerHTML =
+            `<tr><td colspan="2" style="padding:12px;color:#94a3b8;font-size:11px">C/Fデータは確定期のみ表示（FY22〜FY25）</td></tr>`;
+    }
+
+    // 財務健全性指標
+    if (pl && bs) {
+        const debtTotal = bs.longTermLoan + bs.officerLoan + (bs.familyLoan||0);
+        const dscr = pl.realCF > 0 && pl.interest > 0
+            ? ((pl.realCF*100) / ((pl.interest*100) + 1)).toFixed(1)
+            : '—';
+        const debtYears = pl.ordinary > 0 ? (debtTotal / (pl.ordinary*100)).toFixed(1) : '—';
+        document.getElementById('snapMetricsTable').innerHTML = `
+            <tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px;width:140px">負債比率</th>
+                <td style="padding:6px 8px;text-align:right;font-weight:700">${((debtTotal/bs.totalAssets)*100).toFixed(1)}%</td></tr>
+            <tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px">債務償還年数</th>
+                <td style="padding:6px 8px;text-align:right">${debtYears}年</td></tr>
+            <tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px">支払利息率</th>
+                <td style="padding:6px 8px;text-align:right">${((pl.interest*100)/(debtTotal)*100).toFixed(2)}%</td></tr>
+            <tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px">累積減価償却</th>
+                <td style="padding:6px 8px;text-align:right">${bs.depAccum ? m(bs.depAccum) : '—'}</td></tr>
+            <tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px">管理戸数</th>
+                <td style="padding:6px 8px;text-align:right">${pl.units}戸</td></tr>
+            <tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px">段階</th>
+                <td style="padding:6px 8px;text-align:right"><span style="font-size:11px;padding:2px 8px;border-radius:10px;background:#dbeafe;color:#1e40af">${pl.stage||'実績'}</span></td></tr>
+        `;
+    }
+}
+
+// ===== FYタブ フローティングドロップダウン =====
+(function() {
+    // body直下にメニューdivを追加
+    const menu = document.createElement('div');
+    menu.id = 'fyFloatMenu';
+    menu.innerHTML = `
+        <a id="fyMenuBS"   href="#">📐 財務諸表</a>
+        <a id="fyMenuLoan" href="#">🏦 借入管理</a>
+        <a id="fyMenuCF"   href="#">💧 C/F計算書</a>
+        <a id="fyMenuMon"  href="#">📅 月次推移</a>
+    `;
+    document.body.appendChild(menu);
+
+    let hideTimer = null;
+
+    function showMenu(tab) {
+        const fy = tab.dataset.fy;
+        if (!fy) return;
+        clearTimeout(hideTimer);
+        menu.querySelector('#fyMenuBS').href   = `financials.html?fy=${fy}#sec-bs`;
+        menu.querySelector('#fyMenuLoan').href = `financials.html?fy=${fy}#sec-loan`;
+        menu.querySelector('#fyMenuCF').href   = `financials.html?fy=${fy}#sec-cf`;
+        menu.querySelector('#fyMenuMon').href  = `financials.html?fy=${fy}#sec-monthly`;
+        const r = tab.getBoundingClientRect();
+        menu.style.left = r.left + 'px';
+        menu.style.top  = r.bottom + 'px';
+        menu.style.display = 'block';
+    }
+
+    function scheduleHide() {
+        hideTimer = setTimeout(() => { menu.style.display = 'none'; }, 180);
+    }
+
+    // 全期間タブ用メニューを別途作成
+    const allMenu = document.createElement('div');
+    allMenu.id = 'fyFloatMenuAll';
+    allMenu.style.cssText = 'display:none;position:fixed;background:#fff;border:1px solid #e2e8f0;border-top:3px solid #1a3d6e;border-radius:0 0 8px 8px;box-shadow:0 8px 24px rgba(0,0,0,0.15);min-width:180px;z-index:500';
+    allMenu.innerHTML = `
+        <a href="financials.html#sec-pl-trend"  style="display:block;padding:11px 18px;font-size:13px;font-weight:500;color:#1e293b;text-decoration:none;border-bottom:1px solid #f0f4f8">📈 P/L推移グラフ</a>
+        <a href="financials.html#sec-bs-trend"  style="display:block;padding:11px 18px;font-size:13px;font-weight:500;color:#1e293b;text-decoration:none;border-bottom:1px solid #f0f4f8">🏦 資産・借入推移</a>
+        <a href="financials.html#sec-long-trend" style="display:block;padding:11px 18px;font-size:13px;font-weight:500;color:#1e293b;text-decoration:none">📋 全期間テーブル</a>
+    `;
+    allMenu.querySelectorAll('a').forEach(a => {
+        a.addEventListener('mouseenter', () => { a.style.background='#f0f4ff'; a.style.paddingLeft='24px'; });
+        a.addEventListener('mouseleave', () => { a.style.background=''; a.style.paddingLeft='18px'; });
+    });
+    document.body.appendChild(allMenu);
+
+    const allTab = document.querySelector('.fy-tab-fin[data-fy-all]');
+    if (allTab) {
+        allTab.addEventListener('mouseenter', () => {
+            clearTimeout(hideTimer);
+            const r = allTab.getBoundingClientRect();
+            allMenu.style.left = r.left + 'px';
+            allMenu.style.top  = r.bottom + 'px';
+            allMenu.style.display = 'block';
+        });
+        allTab.addEventListener('mouseleave', () => {
+            hideTimer = setTimeout(() => { allMenu.style.display = 'none'; }, 180);
+        });
+        allMenu.addEventListener('mouseenter', () => clearTimeout(hideTimer));
+        allMenu.addEventListener('mouseleave', () => {
+            hideTimer = setTimeout(() => { allMenu.style.display = 'none'; }, 180);
+        });
+    }
+
+    document.querySelectorAll('.fy-tab-fin[data-fy]').forEach(tab => {
+        tab.addEventListener('mouseenter', () => showMenu(tab));
+        tab.addEventListener('mouseleave', scheduleHide);
+    });
+    menu.addEventListener('mouseenter', () => clearTimeout(hideTimer));
+    menu.addEventListener('mouseleave', scheduleHide);
+})();
+</script>
+<!-- hidden_logo_link -->
+<script>
+(function(){
+    var logo = document.querySelector('.header-logo');
+    if (!logo) return;
+    var clicks = 0, timer = null;
+    logo.addEventListener('click', function(e){
+        clicks++;
+        if (clicks === 1) {
+            timer = setTimeout(function(){ clicks = 0; }, 1500);
+        }
+        if (clicks >= 3) {
+            clearTimeout(timer);
+            clicks = 0;
+            location.href = 'private.html';
+        }
+    });
+})();
+</script>
+</body>
+</html>

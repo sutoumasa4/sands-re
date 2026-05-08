@@ -2,10 +2,894 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0; url=contact.html">
-  <title>合同会社SANDS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>財務情報 | 合同会社SANDS</title>
+  <meta name="description" content="合同会社SANDSの財務情報。FY25確定業績・中期経営計画・借入方針を開示しています。金融機関・投資家向け。">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    /* ── Page Hero ── */
+    .page-hero {
+      padding: 140px 32px 80px;
+      background: var(--color-bg-dark);
+    }
+    .page-hero-title {
+      font-family: var(--font-serif);
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 300;
+      color: #fff;
+      margin-bottom: 16px;
+    }
+    .page-hero-lead {
+      font-size: 0.97rem;
+      color: rgba(255,255,255,0.5);
+      line-height: 2;
+      max-width: 560px;
+    }
+
+    /* ── Disclosure Banner ── */
+    .disclosure-bar {
+      background: #f7f7f5;
+      border-bottom: 1px solid var(--color-border);
+      padding: 14px 32px;
+    }
+    .disclosure-inner {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      font-size: 0.78rem;
+      color: var(--color-text-muted);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .disclosure-inner::before {
+      content: 'ℹ';
+      flex-shrink: 0;
+      width: 18px; height: 18px;
+      background: var(--color-text-muted);
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+    }
+
+    /* ── KPI Cards ── */
+    .kpi-strip {
+      background: var(--color-primary);
+      padding: 0 32px;
+    }
+    .kpi-strip-inner {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+    }
+    .kpi-item {
+      padding: 40px 24px;
+      border-right: 1px solid rgba(255,255,255,0.07);
+      text-align: center;
+    }
+    .kpi-item:last-child { border-right: none; }
+    .kpi-num {
+      font-family: var(--font-serif);
+      font-size: 2.2rem;
+      font-weight: 300;
+      color: #fff;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .kpi-num em {
+      font-style: normal;
+      font-size: 0.95rem;
+      color: var(--color-accent-light);
+      margin-left: 3px;
+    }
+    .kpi-num.highlight { color: var(--color-accent-light); }
+    .kpi-label {
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.35);
+      text-transform: uppercase;
+    }
+    .kpi-delta {
+      font-size: 0.72rem;
+      color: var(--color-accent-light);
+      margin-top: 4px;
+    }
+    @media (max-width: 900px) {
+      .kpi-strip-inner { grid-template-columns: repeat(3, 1fr); }
+      .kpi-item:nth-child(3) { border-right: none; }
+    }
+    @media (max-width: 600px) {
+      .kpi-strip-inner { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* ── Performance Table ── */
+    .perf-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    .perf-table th {
+      text-align: left;
+      padding: 10px 16px;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      color: var(--color-text-muted);
+      border-bottom: 1px solid var(--color-border);
+      font-weight: 500;
+      background: #f7f5f0;
+    }
+    .perf-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--color-border);
+      color: var(--color-text);
+      vertical-align: middle;
+    }
+    .perf-table tr:last-child td { border-bottom: none; }
+    .perf-table .row-head {
+      font-weight: 500;
+      color: var(--color-text-muted);
+      font-size: 0.85rem;
+    }
+    .perf-table .val { text-align: right; font-variant-numeric: tabular-nums; }
+    .perf-table .highlight-col {
+      background: rgba(92,122,70,0.06);
+      font-weight: 700;
+      color: var(--color-accent);
+    }
+    .perf-table .proj { color: var(--color-text-muted); }
+    .perf-table .proj td { color: var(--color-text-muted); }
+    .section-divider {
+      height: 1px;
+      background: var(--color-border);
+      margin: 40px 0;
+    }
+
+    /* ── Progress Bar ── */
+    .progress-wrap { margin-top: 8px; }
+    .progress-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    .progress-label { font-size: 0.85rem; color: var(--color-text); width: 200px; flex-shrink: 0; }
+    .progress-bar-bg { flex: 1; height: 6px; background: var(--color-border); border-radius: 3px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; background: var(--color-accent); border-radius: 3px; transition: width 1s ease; }
+    .progress-val { font-size: 0.8rem; font-weight: 600; color: var(--color-accent); width: 72px; text-align: right; flex-shrink: 0; }
+    .progress-target { font-size: 0.72rem; color: var(--color-text-muted); width: 80px; flex-shrink: 0; }
+
+    /* ── Loan Table ── */
+    .loan-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+    .loan-table th {
+      padding: 10px 14px;
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      color: var(--color-text-muted);
+      border-bottom: 1px solid var(--color-border);
+      text-align: left;
+      font-weight: 500;
+      background: #f7f5f0;
+      white-space: nowrap;
+    }
+    .loan-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--color-border);
+      vertical-align: middle;
+    }
+    .loan-table tr:last-child td { border-bottom: none; }
+    .loan-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+    .loan-table tfoot td { background: #f7f5f0; font-weight: 700; }
+    .rate-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 0.7rem;
+      font-weight: 500;
+    }
+    .rate-badge.fixed { background: rgba(92,122,70,0.12); color: var(--color-accent); }
+    .rate-badge.variable { background: rgba(230,120,0,0.1); color: #c07000; }
+
+    /* ── BS Grid ── */
+    .bs-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      background: var(--color-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    @media (max-width: 768px) { .bs-grid { grid-template-columns: 1fr; } }
+    .bs-pane {
+      background: var(--color-bg);
+      padding: 40px 36px;
+    }
+    .bs-pane-title {
+      font-size: 0.72rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--color-accent);
+      font-weight: 500;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .bs-pane-title::after { content: ''; flex: 1; height: 1px; background: var(--color-accent); opacity: 0.25; }
+    .bs-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 9px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.04);
+      font-size: 0.9rem;
+    }
+    .bs-row:last-child { border-bottom: none; }
+    .bs-row.total {
+      font-weight: 700;
+      border-top: 1px solid var(--color-border);
+      border-bottom: none;
+      padding-top: 14px;
+      margin-top: 6px;
+      font-size: 0.95rem;
+    }
+    .bs-row.indent { padding-left: 14px; font-size: 0.85rem; color: var(--color-text-muted); }
+    .bs-row .bs-val { font-variant-numeric: tabular-nums; font-weight: 500; }
+    .bs-row .bs-val.accent { color: var(--color-accent); font-weight: 700; }
+    .bs-row .bs-val.muted { color: var(--color-text-muted); font-weight: 400; }
+
+    /* ── Roadmap ── */
+    .roadmap {
+      position: relative;
+      padding-left: 32px;
+    }
+    .roadmap::before {
+      content: '';
+      position: absolute;
+      left: 7px; top: 16px; bottom: 16px;
+      width: 2px;
+      background: var(--color-accent);
+      opacity: 0.2;
+    }
+    .roadmap-item {
+      position: relative;
+      padding: 0 0 44px 32px;
+    }
+    .roadmap-item:last-child { padding-bottom: 0; }
+    .roadmap-dot {
+      position: absolute;
+      left: -32px;
+      top: 6px;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: var(--color-bg);
+      border: 2px solid var(--color-accent);
+    }
+    .roadmap-dot.active {
+      background: var(--color-accent);
+    }
+    .roadmap-stage {
+      font-size: 0.72rem;
+      letter-spacing: 0.15em;
+      color: var(--color-accent);
+      text-transform: uppercase;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+    .roadmap-title {
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--color-primary);
+      margin-bottom: 6px;
+    }
+    .roadmap-body {
+      font-size: 0.88rem;
+      color: var(--color-text-muted);
+      line-height: 1.9;
+    }
+
+    /* ── Contact CTA ── */
+    .cta-section {
+      background: var(--color-bg-dark);
+      padding: 112px 32px;
+      text-align: center;
+    }
+    .cta-inner { max-width: 640px; margin: 0 auto; }
+    .cta-title {
+      font-family: var(--font-serif);
+      font-size: clamp(1.6rem, 3vw, 2.4rem);
+      font-weight: 300;
+      color: #fff;
+      margin-bottom: 20px;
+      line-height: 1.4;
+    }
+    .cta-body {
+      font-size: 0.93rem;
+      color: rgba(255,255,255,0.5);
+      line-height: 2;
+      margin-bottom: 44px;
+    }
+    .cta-buttons {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    /* footer-nav */
+    .footer-nav {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .footer-nav a {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.35);
+      transition: color 0.2s;
+    }
+    .footer-nav a:hover { color: rgba(255,255,255,0.7); }
+
+    /* Two-col layout */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: start;
+    }
+    @media (max-width: 768px) { .two-col { grid-template-columns: 1fr; gap: 48px; } }
+
+    .card-box {
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 36px;
+    }
+    .card-box-title {
+      font-size: 0.72rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--color-accent);
+      font-weight: 500;
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--color-border);
+    }
+  </style>
 </head>
-<body>
-  <script>window.location.href = 'contact.html';</script>
+<body class="subpage">
+
+  <!-- Navigation -->
+  <header class="header scrolled" id="header">
+    <nav class="nav">
+      <a href="index.html" class="nav-logo" style="color: var(--color-primary);">SANDS</a>
+      <input type="checkbox" id="nav-toggle" class="nav-toggle">
+      <label for="nav-toggle" class="hamburger" aria-label="メニュー"><span></span><span></span><span></span></label>
+      <ul class="nav-links nav-links-dark">
+        <li><a href="index.html#mission">理念</a></li>
+        <li><a href="index.html#philosophy">経営姿勢</a></li>
+        <li><a href="properties.html">物件情報</a></li>
+        <li><a href="financial.html" class="nav-active">財務情報</a></li>
+        <li><a href="news.html">ニュース</a></li>
+        <li><a href="company.html">会社情報</a></li>
+        <li><a href="contact.html">お問い合わせ</a></li>
+        <li><a href="docs/index.html" class="nav-cta">資料ダウンロード</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Page Hero -->
+  <section class="page-hero page-hero-dark page-hero-photo"
+    style="background-image: url('https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1600&q=80'); background-position: center 50%;">
+    <div class="page-hero-overlay"></div>
+    <div class="container" style="position:relative;z-index:1;">
+      <p class="section-eyebrow" style="color:var(--color-accent-light);">Financial Information</p>
+      <h1 class="page-hero-title">財務情報</h1>
+      <p class="page-hero-lead">
+        金融機関・投資家の皆さまに向けて、合同会社SANDSの財務状況・
+        経営計画をご案内しています。詳細資料は面談後にご提供します。
+      </p>
+    </div>
+  </section>
+
+  <!-- Disclosure -->
+  <div class="disclosure-bar">
+    <div class="disclosure-inner">
+      本ページの数値は FY25（2025年4月〜2026年3月）確定値および計画値です。詳細な計算書類・物件プロフィールは面談後にご提供しています。
+    </div>
+  </div>
+
+  <!-- KPI Strip -->
+  <div class="kpi-strip">
+    <div class="kpi-strip-inner">
+      <div class="kpi-item">
+        <div class="kpi-num">52,449<em>万</em></div>
+        <div class="kpi-label">総資産（FY25末）</div>
+      </div>
+      <div class="kpi-item">
+        <div class="kpi-num highlight">25,897<em>万</em></div>
+        <div class="kpi-label">売上高（FY25）</div>
+        <div class="kpi-delta">↑ 前年比 +99%</div>
+      </div>
+      <div class="kpi-item">
+        <div class="kpi-num highlight">5.0<em>%</em></div>
+        <div class="kpi-label">経常利益率（FY25）</div>
+        <div class="kpi-delta">↑ 前年 3.0% → +2.0pp</div>
+      </div>
+      <div class="kpi-item">
+        <div class="kpi-num">98.5<em>%</em></div>
+        <div class="kpi-label">稼働率（FY25）</div>
+      </div>
+      <div class="kpi-item">
+        <div class="kpi-num">44,129<em>万</em></div>
+        <div class="kpi-label">長期借入残高</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 業績推移 ===== -->
+  <section class="section section-white">
+    <div class="container">
+      <p class="section-eyebrow reveal">Performance</p>
+      <h2 class="section-title reveal reveal-delay-1">業績推移</h2>
+      <p class="section-lead reveal reveal-delay-2">
+        FY22（第1期）から4期連続の増収増益。物件取得ペースに合わせて
+        売上高・経常利益ともに着実に拡大しています。
+      </p>
+
+      <div class="reveal">
+        <table class="perf-table">
+          <thead>
+            <tr>
+              <th style="width:160px">項目</th>
+              <th class="val">FY22<br><span style="font-size:0.7em;font-weight:400;">（第1期）</span></th>
+              <th class="val">FY23<br><span style="font-size:0.7em;font-weight:400;">（第2期）</span></th>
+              <th class="val">FY24<br><span style="font-size:0.7em;font-weight:400;">（第3期）</span></th>
+              <th class="val highlight-col">FY25<br><span style="font-size:0.7em;font-weight:400;">（第4期・確定）</span></th>
+              <th class="val proj">FY26<br><span style="font-size:0.7em;font-weight:400;">（計画）</span></th>
+              <th class="val proj">FY27<br><span style="font-size:0.7em;font-weight:400;">（目標）</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="row-head">保有戸数</td>
+              <td class="val">8戸</td>
+              <td class="val">16戸</td>
+              <td class="val">25戸</td>
+              <td class="val highlight-col">41戸</td>
+              <td class="val proj">49戸</td>
+              <td class="val proj">60戸</td>
+            </tr>
+            <tr>
+              <td class="row-head">売上高</td>
+              <td class="val">330万</td>
+              <td class="val">550万</td>
+              <td class="val">1,300万</td>
+              <td class="val highlight-col">2,590万</td>
+              <td class="val proj">3,500万</td>
+              <td class="val proj">4,500万</td>
+            </tr>
+            <tr>
+              <td class="row-head">経常利益</td>
+              <td class="val">12万</td>
+              <td class="val">28万</td>
+              <td class="val">39万</td>
+              <td class="val highlight-col">130万</td>
+              <td class="val proj">280万</td>
+              <td class="val proj">450万</td>
+            </tr>
+            <tr>
+              <td class="row-head">経常利益率</td>
+              <td class="val">3.6%</td>
+              <td class="val">5.1%</td>
+              <td class="val">3.0%</td>
+              <td class="val highlight-col">5.0%</td>
+              <td class="val proj">8.0%</td>
+              <td class="val proj">10.0%</td>
+            </tr>
+            <tr>
+              <td class="row-head">支払利息</td>
+              <td class="val">—</td>
+              <td class="val">—</td>
+              <td class="val">—</td>
+              <td class="val highlight-col">466万</td>
+              <td class="val proj">—</td>
+              <td class="val proj">—</td>
+            </tr>
+            <tr>
+              <td class="row-head">減価償却費</td>
+              <td class="val">—</td>
+              <td class="val">—</td>
+              <td class="val">—</td>
+              <td class="val highlight-col">1,109万</td>
+              <td class="val proj">—</td>
+              <td class="val proj">—</td>
+            </tr>
+            <tr>
+              <td class="row-head">債務償還年数</td>
+              <td class="val">38.7年</td>
+              <td class="val">76.6年</td>
+              <td class="val">46.0年</td>
+              <td class="val highlight-col">36.6年</td>
+              <td class="val proj">—</td>
+              <td class="val proj">35年（目標）</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <!-- FY25 P/L ハイライト -->
+      <div class="two-col reveal reveal-delay-1">
+        <div>
+          <h3 style="font-family:var(--font-serif);font-size:1.2rem;font-weight:300;margin-bottom:20px;">FY25 損益ハイライト</h3>
+          <table class="perf-table">
+            <tbody>
+              <tr><td class="row-head">不動産賃貸収入</td><td class="val">25,791万</td></tr>
+              <tr><td class="row-head">更新手数料収入</td><td class="val">107万</td></tr>
+              <tr><td class="row-head" style="font-weight:700">売上高 計</td><td class="val" style="font-weight:700">25,897万</td></tr>
+              <tr><td class="row-head">販売管理費 計</td><td class="val">20,517万</td></tr>
+              <tr><td class="row-head">　うち 減価償却費</td><td class="val">1,109万</td></tr>
+              <tr><td class="row-head">　うち 支払手数料</td><td class="val">2,306万</td></tr>
+              <tr><td class="row-head">　うち 租税公課</td><td class="val">1,600万</td></tr>
+              <tr><td class="row-head" style="font-weight:700">営業利益</td><td class="val" style="font-weight:700">5,381万</td></tr>
+              <tr><td class="row-head">支払利息</td><td class="val">△ 466万</td></tr>
+              <tr><td class="row-head" style="font-weight:700;color:var(--color-accent)">経常利益</td><td class="val" style="font-weight:700;color:var(--color-accent)">1,302万</td></tr>
+              <tr><td class="row-head">当期純利益</td><td class="val">941万</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div>
+          <h3 style="font-family:var(--font-serif);font-size:1.2rem;font-weight:300;margin-bottom:20px;">中期 KPI 進捗</h3>
+          <div class="progress-wrap">
+            <div class="progress-row">
+              <div class="progress-label">総戸数（目標 60戸）</div>
+              <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:68.3%"></div></div>
+              <div class="progress-val">41戸</div>
+              <div class="progress-target">目標 60戸</div>
+            </div>
+            <div class="progress-row">
+              <div class="progress-label">経常利益率（目標 10%）</div>
+              <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:50%"></div></div>
+              <div class="progress-val">5.0%</div>
+              <div class="progress-target">目標 10%</div>
+            </div>
+            <div class="progress-row">
+              <div class="progress-label">債務償還年数（目標 35年）</div>
+              <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:95.6%"></div></div>
+              <div class="progress-val">36.6年</div>
+              <div class="progress-target">目標 35年</div>
+            </div>
+            <div class="progress-row">
+              <div class="progress-label">自己資本比率（目標 10%）</div>
+              <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:20%"></div></div>
+              <div class="progress-val">2.0%</div>
+              <div class="progress-target">目標 10%</div>
+            </div>
+            <div class="progress-row">
+              <div class="progress-label">稼働率</div>
+              <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:98.5%"></div></div>
+              <div class="progress-val">98.5%</div>
+              <div class="progress-target">目標 95%+</div>
+            </div>
+          </div>
+          <div class="contact-note" style="margin-top:28px;font-size:0.82rem;">
+            FY26はCasaCandai・CasaAltanaの通年稼働が寄与し、
+            売上高3,500万・経常利益率8%を見込みます。
+            FY27で総戸数60戸・利益率10%の中期目標達成を目指します。
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== B/S ===== -->
+  <section class="section section-off">
+    <div class="container">
+      <p class="section-eyebrow reveal">Balance Sheet</p>
+      <h2 class="section-title reveal reveal-delay-1">貸借対照表（FY25末）</h2>
+      <p class="section-lead reveal reveal-delay-2">
+        2026年3月31日現在。総資産5億2,449万円、純資産1,045万円（自己資本比率 2.0%）。
+        役員借入金5,979万円・親族借入金1,200万円を含む、実質自己資本は3.8%水準です。
+      </p>
+      <div class="bs-grid reveal">
+        <div class="bs-pane">
+          <div class="bs-pane-title">資産の部</div>
+          <div class="bs-row"><span>【流動資産】</span><span class="bs-val">1,879万</span></div>
+          <div class="bs-row indent"><span>現金及び預金</span><span class="bs-val muted">1,879万</span></div>
+          <div class="bs-row"><span>【固定資産】</span><span class="bs-val">50,549万</span></div>
+          <div class="bs-row indent"><span>土地</span><span class="bs-val muted">22,717万</span></div>
+          <div class="bs-row indent"><span>建物（減価償却後）</span><span class="bs-val muted">26,489万</span></div>
+          <div class="bs-row indent"><span>付属設備・器具備品</span><span class="bs-val muted">196万</span></div>
+          <div class="bs-row indent"><span>差入保証金・長期前払費用</span><span class="bs-val muted">1,152万</span></div>
+          <div class="bs-row"><span>【繰延資産】</span><span class="bs-val">21万</span></div>
+          <div class="bs-row total"><span>資産合計</span><span class="bs-val">52,449万</span></div>
+        </div>
+        <div class="bs-pane">
+          <div class="bs-pane-title">負債・純資産の部</div>
+          <div class="bs-row"><span>【流動負債】</span><span class="bs-val">75万</span></div>
+          <div class="bs-row indent"><span>未払金・未払税等・預り金</span><span class="bs-val muted">75万</span></div>
+          <div class="bs-row"><span>【固定負債】</span><span class="bs-val">51,328万</span></div>
+          <div class="bs-row indent"><span>長期借入金（金融機関）</span><span class="bs-val muted">44,129万</span></div>
+          <div class="bs-row indent"><span>役員借入金</span><span class="bs-val muted">5,979万</span></div>
+          <div class="bs-row indent"><span>長期借入金（親族）</span><span class="bs-val muted">1,200万</span></div>
+          <div class="bs-row indent"><span>預り敷金</span><span class="bs-val muted">21万</span></div>
+          <div class="bs-row"><span>【純資産（社員資本）】</span><span class="bs-val accent">1,045万</span></div>
+          <div class="bs-row indent"><span>資本金</span><span class="bs-val muted">900万</span></div>
+          <div class="bs-row indent"><span>利益剰余金</span><span class="bs-val muted">145万</span></div>
+          <div class="bs-row total"><span>負債純資産合計</span><span class="bs-val">52,449万</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 借入方針 ===== -->
+  <section class="section section-white">
+    <div class="container">
+      <p class="section-eyebrow reveal">Debt Policy</p>
+      <h2 class="section-title reveal reveal-delay-1">借入方針と返済状況</h2>
+      <p class="section-lead reveal reveal-delay-2">
+        物件取得ごとに担当金融機関を分散し、金利・返済期間・方式を
+        物件特性に合わせて設定しています。2026年3月末時点の借入残高は
+        長期借入金ベースで4億4,129万円、月次返済額1,565,315円です。
+      </p>
+
+      <div class="reveal">
+        <table class="loan-table">
+          <thead>
+            <tr>
+              <th>対象物件</th>
+              <th>金融機関</th>
+              <th class="num">借入残高</th>
+              <th class="num">金利</th>
+              <th>種別</th>
+              <th class="num">月次返済額</th>
+              <th class="num">残期間</th>
+              <th>返済方式</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="font-weight:500">Casa Bruno</td>
+              <td>りそな銀行</td>
+              <td class="num">5,759万</td>
+              <td class="num">1.775%</td>
+              <td><span class="rate-badge variable">変動</span></td>
+              <td class="num">217,058円</td>
+              <td class="num">約26年3ヶ月</td>
+              <td>元利均等</td>
+            </tr>
+            <tr>
+              <td style="font-weight:500">Casa Ovest</td>
+              <td>横浜銀行</td>
+              <td class="num">10,359万</td>
+              <td class="num">1.500%</td>
+              <td><span class="rate-badge variable">変動</span></td>
+              <td class="num">309,159円</td>
+              <td class="num">約33年</td>
+              <td>元利均等</td>
+            </tr>
+            <tr>
+              <td style="font-weight:500">Casa Terzo</td>
+              <td>横浜銀行</td>
+              <td class="num">10,243万</td>
+              <td class="num">1.350%</td>
+              <td><span class="rate-badge fixed">3年固定</span></td>
+              <td class="num">313,209円</td>
+              <td class="num">約34年</td>
+              <td>元利均等</td>
+            </tr>
+            <tr>
+              <td style="font-weight:500">Casa Candai</td>
+              <td>りそな銀行</td>
+              <td class="num">10,480万</td>
+              <td class="num">1.525%</td>
+              <td><span class="rate-badge fixed">固定</span></td>
+              <td class="num">457,446円</td>
+              <td class="num">約29年4ヶ月</td>
+              <td>元金均等</td>
+            </tr>
+            <tr>
+              <td style="font-weight:500">Casa Altana</td>
+              <td>スルガ銀行</td>
+              <td class="num">7,100万</td>
+              <td class="num">2.250%</td>
+              <td><span class="rate-badge variable">変動</span></td>
+              <td class="num">244,791円</td>
+              <td class="num">約34年11ヶ月</td>
+              <td>元利均等</td>
+            </tr>
+            <tr style="color:var(--color-text-muted);font-size:0.85rem">
+              <td>運転資金</td>
+              <td>川崎信金 / かながわ信金</td>
+              <td class="num">187万</td>
+              <td class="num">2.300%</td>
+              <td><span class="rate-badge fixed">固定</span></td>
+              <td class="num">23,652円</td>
+              <td class="num">約7〜8年</td>
+              <td>元金均等</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="2" style="font-weight:700">合計</td>
+              <td class="num">44,129万</td>
+              <td class="num">—</td>
+              <td>—</td>
+              <td class="num">1,565,315円</td>
+              <td class="num">—</td>
+              <td>—</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <div style="margin-top:40px;" class="reveal reveal-delay-1">
+        <div class="two-col">
+          <div class="card-box">
+            <div class="card-box-title">取引金融機関 ポリシー</div>
+            <div style="font-size:0.88rem;color:var(--color-text-muted);line-height:1.9;">
+              <p style="margin-bottom:12px">
+                物件ごとに金融機関を分散し、特定行への集中リスクを抑制しています。
+                現在の取引行は りそな銀行・横浜銀行・スルガ銀行・川崎信金・かながわ信金の5行です。
+              </p>
+              <p>
+                中期的には、スルガ銀行借入（変動 2.25%）の低金利へのリファイナンスと、
+                横浜銀行集中（全体の46%）の分散を検討します。
+              </p>
+            </div>
+          </div>
+          <div class="card-box">
+            <div class="card-box-title">財務指標（参考）</div>
+            <table class="loan-table">
+              <tr><td>自己資本比率</td><td class="num" style="font-weight:600">2.0%</td></tr>
+              <tr><td>実質自己資本比率（役員借入含む）</td><td class="num" style="font-weight:600">3.8%</td></tr>
+              <tr><td>LTV（長期借入金 ÷ 取得原価合計）</td><td class="num" style="font-weight:600">89.7%</td></tr>
+              <tr><td>債務償還年数（FY25）</td><td class="num" style="font-weight:600">36.6年</td></tr>
+              <tr><td>加重平均金利</td><td class="num" style="font-weight:600">1.64%</td></tr>
+              <tr><td>加重平均残存期間</td><td class="num" style="font-weight:600">約31.5年</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 中期経営計画 ===== -->
+  <section class="section section-off">
+    <div class="container">
+      <p class="section-eyebrow reveal">Medium-term Plan</p>
+      <h2 class="section-title reveal reveal-delay-1">中期経営計画 FY25〜FY27</h2>
+      <p class="section-lead reveal reveal-delay-2">
+        FY25を起点とする3ヵ年計画（2NDステージ）では「総戸数60戸」と
+        「売上高経常利益率10%」を重要指標に掲げています。
+      </p>
+
+      <div class="two-col reveal">
+        <div>
+          <div class="roadmap">
+            <div class="roadmap-item">
+              <div class="roadmap-dot"></div>
+              <div class="roadmap-stage">1st Stage ／ FY22〜FY24</div>
+              <div class="roadmap-title">初期ポートフォリオ構築（25戸）</div>
+              <div class="roadmap-body">CasaBruno〜CasaTerzoの3棟25戸を取得。3期連続黒字を達成し、5行との融資実績を積み上げました。</div>
+            </div>
+            <div class="roadmap-item">
+              <div class="roadmap-dot active"></div>
+              <div class="roadmap-stage">2nd Stage ／ FY25〜FY27 ← 現在</div>
+              <div class="roadmap-title">規模拡大と収益性改善（60戸・利益率10%）</div>
+              <div class="roadmap-body">FY25に41戸達成（+16戸）。取得候補2物件（桜木町8戸、根岸9戸）で FY27目標60戸の達成を目指します。AI・DX活用による管理効率化で利益率を改善中。</div>
+            </div>
+            <div class="roadmap-item">
+              <div class="roadmap-dot"></div>
+              <div class="roadmap-stage">3rd Stage ／ FY28〜</div>
+              <div class="roadmap-title">ポートフォリオ最適化と自己資本比率10%</div>
+              <div class="roadmap-body">規模拡大を継続しつつ、物件売却によるポートフォリオ入れ替えも視野に。自己資本比率10%の達成を目指します。</div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="card-box" style="margin-bottom:20px;">
+            <div class="card-box-title">FY27 重要指標</div>
+            <table class="loan-table">
+              <thead>
+                <tr><th>指標</th><th class="num">現状（FY25）</th><th class="num">目標（FY27）</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>総戸数</td>
+                  <td class="num">41戸</td>
+                  <td class="num" style="font-weight:700;color:var(--color-accent)">60戸</td>
+                </tr>
+                <tr>
+                  <td>売上高経常利益率</td>
+                  <td class="num">5.0%</td>
+                  <td class="num" style="font-weight:700;color:var(--color-accent)">10.0%</td>
+                </tr>
+                <tr>
+                  <td>債務償還年数</td>
+                  <td class="num">36.6年</td>
+                  <td class="num" style="font-weight:700;color:var(--color-accent)">35年以内</td>
+                </tr>
+                <tr>
+                  <td>自己資本比率</td>
+                  <td class="num">2.0%</td>
+                  <td class="num" style="font-weight:700;color:var(--color-accent)">10%（FY30目標）</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="contact-note" style="font-size:0.82rem;">
+            <strong>投資方針：</strong>総額1億円規模の自己資金を不動産事業へシフト中。
+            現時点で累計約7,000万円の投資を完了（41戸取得）。
+            残り約3,000万円を機動的に追加投資し、60戸計画を完遂します。
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="cta-inner">
+      <p class="section-eyebrow" style="color:var(--color-accent-light);justify-content:center;">Request Documents</p>
+      <h2 class="cta-title">詳細資料・面談のご依頼</h2>
+      <p class="cta-body">
+        法人プロフィール・物件プロフィール・計算書類（B/S・P/L）の詳細版は
+        面談後にご提供しています。金融機関・投資家の方はお気軽にご連絡ください。
+      </p>
+      <div class="cta-buttons">
+        <a href="contact.html" class="btn btn-primary">お問い合わせ・面談依頼</a>
+        <a href="docs/index.html" class="btn btn-outline-white">資料ダウンロード</a>
+        <a href="properties.html" class="btn btn-outline-white">物件情報を見る</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <p class="footer-logo">SANDS</p>
+        <p class="footer-tagline">Sustainable AND Smile</p>
+      </div>
+      <nav class="footer-nav">
+        <a href="index.html#mission">理念</a>
+        <a href="index.html#philosophy">経営姿勢</a>
+        <a href="properties.html">物件情報</a>
+        <a href="financial.html">財務情報</a>
+        <a href="news.html">ニュース</a>
+        <a href="company.html">会社情報</a>
+        <a href="contact.html">お問い合わせ</a>
+        <a href="docs/index.html">資料ダウンロード</a>
+      </nav>
+      <p class="footer-copy">&copy; 2022 合同会社SANDS All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="assets/js/main.js"></script>
+  <script>
+  (function(){
+    var logo = document.querySelector('.nav-logo');
+    if (!logo) return;
+    var clicks = 0, timer = null;
+    logo.addEventListener('click', function(e){
+      e.preventDefault();
+      clicks++;
+      if (clicks === 1) timer = setTimeout(function(){ clicks = 0; }, 1500);
+      if (clicks >= 5) {
+        clearTimeout(timer); clicks = 0;
+        window.location.href = '/members/';
+      }
+    });
+  })();
+  </script>
 </body>
 </html>

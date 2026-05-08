@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>物件情報 | 合同会社SANDS</title>
+  <meta name="description" content="合同会社SANDSが横浜市内に保有する5棟41戸の物件情報。全物件新築木造、光回線完備、月次清掃標準化。">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    /* ── Stats Bar ── */
+    .stats-bar {
+      background: var(--color-primary);
+      padding: 0 32px;
+    }
+    .stats-bar-inner {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      divide: 1px solid rgba(255,255,255,0.08);
+    }
+    .stat-item {
+      padding: 36px 24px;
+      border-right: 1px solid rgba(255,255,255,0.08);
+      text-align: center;
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-num {
+      font-family: var(--font-serif);
+      font-size: 2.4rem;
+      font-weight: 300;
+      color: #fff;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .stat-num em {
+      font-style: normal;
+      font-size: 1rem;
+      color: var(--color-accent-light);
+      margin-left: 4px;
+    }
+    .stat-label {
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      color: rgba(255,255,255,0.35);
+      text-transform: uppercase;
+    }
+    @media (max-width: 768px) {
+      .stats-bar-inner { grid-template-columns: repeat(2, 1fr); }
+      .stat-item:nth-child(2) { border-right: none; }
+    }
+
+    /* ── Feature Badges ── */
+    .feature-badges {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 24px;
+    }
+    .feature-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--color-accent-glow);
+      border: 1px solid rgba(92,122,70,0.2);
+      color: var(--color-accent);
+      font-size: 0.78rem;
+      padding: 7px 14px;
+      border-radius: 40px;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── Property Cards ── */
+    .property-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .property-item {
+      padding: 80px 0;
+      border-bottom: 1px solid var(--color-border);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: start;
+    }
+    .property-item:first-child { padding-top: 0; }
+    .property-item:last-child { border-bottom: none; }
+    .property-item.reverse { direction: rtl; }
+    .property-item.reverse > * { direction: ltr; }
+    @media (max-width: 900px) {
+      .property-item { grid-template-columns: 1fr; gap: 40px; direction: ltr; }
+      .property-item.reverse > * { direction: ltr; }
+    }
+
+    .property-image-wrap {
+      position: relative;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      background: #e8e4dc;
+    }
+    .property-image-wrap img {
+      width: 100%;
+      height: 380px;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.6s var(--transition);
+    }
+    .property-image-wrap:hover img { transform: scale(1.04); }
+    .property-image-tag {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      background: var(--color-accent);
+      color: #fff;
+      font-size: 0.72rem;
+      padding: 6px 14px;
+      border-radius: 40px;
+      letter-spacing: 0.08em;
+    }
+
+    .property-body {}
+    .property-num {
+      font-family: var(--font-serif);
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      color: var(--color-accent);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .property-num::after { content: ''; flex: 0 0 24px; height: 1px; background: var(--color-accent); opacity: 0.4; }
+    .property-name {
+      font-family: var(--font-serif);
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      font-weight: 300;
+      color: var(--color-primary);
+      margin-bottom: 6px;
+    }
+    .property-sub {
+      font-size: 0.82rem;
+      color: var(--color-text-muted);
+      margin-bottom: 28px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .property-sub span {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .property-sep { color: var(--color-border); }
+
+    .property-specs {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1px;
+      background: var(--color-border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 28px;
+    }
+    .spec-item {
+      background: var(--color-bg);
+      padding: 16px 18px;
+    }
+    .spec-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .spec-value {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--color-primary);
+    }
+    .spec-value.accent { color: var(--color-accent); }
+
+    .property-desc {
+      font-size: 0.9rem;
+      color: var(--color-text-muted);
+      line-height: 1.9;
+      margin-bottom: 24px;
+    }
+
+    /* ── Occupancy Bar ── */
+    .occupancy-wrap {
+      margin-top: 4px;
+    }
+    .occupancy-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--color-text-muted);
+      margin-bottom: 6px;
+    }
+    .occupancy-bar {
+      background: var(--color-border);
+      border-radius: 2px;
+      height: 4px;
+      overflow: hidden;
+    }
+    .occupancy-fill {
+      height: 100%;
+      background: var(--color-accent);
+      border-radius: 2px;
+    }
+
+    /* ── Management Section ── */
+    .mgmt-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      background: var(--color-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      margin-top: 64px;
+    }
+    @media (max-width: 768px) { .mgmt-grid { grid-template-columns: 1fr; } }
+    .mgmt-card {
+      background: var(--color-bg);
+      padding: 44px 36px;
+    }
+    .mgmt-icon {
+      font-size: 1.8rem;
+      margin-bottom: 20px;
+    }
+    .mgmt-title {
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--color-primary);
+      margin-bottom: 10px;
+    }
+    .mgmt-body {
+      font-size: 0.88rem;
+      color: var(--color-text-muted);
+      line-height: 1.9;
+    }
+
+    /* ── CTA ── */
+    .cta-section {
+      background: var(--color-bg-dark);
+      padding: 112px 32px;
+      text-align: center;
+    }
+    .cta-inner { max-width: 640px; margin: 0 auto; }
+    .cta-title {
+      font-family: var(--font-serif);
+      font-size: clamp(1.6rem, 3vw, 2.4rem);
+      font-weight: 300;
+      color: #fff;
+      margin-bottom: 20px;
+      line-height: 1.4;
+    }
+    .cta-body {
+      font-size: 0.93rem;
+      color: rgba(255,255,255,0.5);
+      line-height: 2;
+      margin-bottom: 44px;
+    }
+    .cta-buttons {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    /* ── Page Hero Overrides ── */
+    .page-hero {
+      padding: 140px 32px 80px;
+      background: var(--color-bg-dark);
+    }
+    .page-hero-title {
+      font-family: var(--font-serif);
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 300;
+      color: #fff;
+      line-height: 1.3;
+      margin-bottom: 16px;
+    }
+    .page-hero-lead {
+      font-size: 0.97rem;
+      color: rgba(255,255,255,0.5);
+      line-height: 2;
+      max-width: 520px;
+    }
+
+    /* footer-nav */
+    .footer-nav {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .footer-nav a {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.35);
+      transition: color 0.2s;
+    }
+    .footer-nav a:hover { color: rgba(255,255,255,0.7); }
+  </style>
+</head>
+<body class="subpage">
+
+  <!-- Navigation -->
+  <header class="header scrolled" id="header">
+    <nav class="nav">
+      <a href="index.html" class="nav-logo" style="color: var(--color-primary);">SANDS</a>
+      <input type="checkbox" id="nav-toggle" class="nav-toggle">
+      <label for="nav-toggle" class="hamburger" aria-label="メニュー"><span></span><span></span><span></span></label>
+      <ul class="nav-links nav-links-dark">
+        <li><a href="index.html#mission">理念</a></li>
+        <li><a href="index.html#philosophy">経営姿勢</a></li>
+        <li><a href="properties.html" class="nav-active">物件情報</a></li>
+        <li><a href="financial.html">財務情報</a></li>
+        <li><a href="news.html">ニュース</a></li>
+        <li><a href="company.html">会社情報</a></li>
+        <li><a href="contact.html">お問い合わせ</a></li>
+        <li><a href="docs/index.html" class="nav-cta">資料ダウンロード</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Page Hero -->
+  <section class="page-hero page-hero-dark page-hero-photo"
+    style="background-image: url('https://images.unsplash.com/photo-1519302959554-a75be0afc82a?auto=format&fit=crop&w=1600&q=80'); background-position: center 40%;">
+    <div class="page-hero-overlay"></div>
+    <div class="container" style="position:relative;z-index:1;">
+      <p class="section-eyebrow" style="color:var(--color-accent-light);">Portfolio</p>
+      <h1 class="page-hero-title">物件情報</h1>
+      <p class="page-hero-lead">横浜市内に5棟41戸。全物件新築木造、光回線完備、月次清掃標準化。<br>入居者の豊かな暮らしを土台から支えます。</p>
+    </div>
+  </section>
+
+  <!-- Stats Bar -->
+  <div class="stats-bar">
+    <div class="stats-bar-inner">
+      <div class="stat-item">
+        <div class="stat-num">5<em>棟</em></div>
+        <div class="stat-label">保有物件数</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">41<em>戸</em></div>
+        <div class="stat-label">総戸数</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">98.5<em>%</em></div>
+        <div class="stat-label">平均稼働率（FY25）</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">7.47<em>%</em></div>
+        <div class="stat-label">加重平均表面利回り</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Portfolio Overview -->
+  <section class="section section-white">
+    <div class="container">
+      <p class="section-eyebrow reveal">Portfolio Overview</p>
+      <h2 class="section-title reveal reveal-delay-1">5棟 41戸、横浜市内に集中展開</h2>
+      <p class="section-lead reveal reveal-delay-2">
+        保土ヶ谷区・西区・神奈川区・港南区と、横浜市内の4エリアに分散保有。
+        全物件が新築木造・所有権・駐車場なしで統一された運営基準のもと、
+        JR・京急・市営地下鉄の各沿線に配置しています。
+      </p>
+
+      <div class="feature-badges reveal reveal-delay-2">
+        <span class="feature-badge">✓ 全物件 新築木造</span>
+        <span class="feature-badge">✓ 全物件 光回線完備</span>
+        <span class="feature-badge">✓ 全物件 月次清掃標準化</span>
+        <span class="feature-badge">✓ 全物件 劣化対策等級取得</span>
+        <span class="feature-badge">✓ 土地所有権</span>
+      </div>
+
+      <!-- Property List -->
+      <div class="property-list" style="margin-top:80px;">
+
+        <!-- Casa Bruno -->
+        <div class="property-item reveal">
+          <div class="property-image-wrap">
+            <img src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=900&q=80" alt="CasaBruno">
+            <span class="property-image-tag">2022年6月竣工</span>
+          </div>
+          <div class="property-body">
+            <p class="property-num">Property 01</p>
+            <h3 class="property-name">Casa Bruno</h3>
+            <div class="property-sub">
+              <span>📍 横浜市保土ヶ谷区月見台</span>
+              <span class="property-sep">|</span>
+              <span>🚃 JR横須賀線 保土ヶ谷駅 徒歩9分</span>
+            </div>
+            <div class="property-specs">
+              <div class="spec-item"><div class="spec-label">総戸数</div><div class="spec-value">8戸（1K×8）</div></div>
+              <div class="spec-item"><div class="spec-label">構造・築年</div><div class="spec-value">木造 2022年6月</div></div>
+              <div class="spec-item"><div class="spec-label">土地面積</div><div class="spec-value">161㎡</div></div>
+              <div class="spec-item"><div class="spec-label">表面利回り</div><div class="spec-value accent">8.05%</div></div>
+            </div>
+            <p class="property-desc">
+              SANDSファーストプロパティ。1K（18〜19㎡）と1K+ロフト（1・2階）の混在型。
+              保土ヶ谷エリアの利便性と閑静な住環境を両立した2階建て。
+              劣化対策等級2級取得。全室入居済み（稼働率97%）。
+            </p>
+            <div class="occupancy-wrap">
+              <div class="occupancy-header"><span>稼働率</span><span>97%（8戸中 7.76戸相当）</span></div>
+              <div class="occupancy-bar"><div class="occupancy-fill" style="width:97%"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Casa Ovest -->
+        <div class="property-item reverse reveal reveal-delay-1">
+          <div class="property-image-wrap">
+            <img src="https://images.unsplash.com/photo-1486325212027-8081e485255e?auto=format&fit=crop&w=900&q=80" alt="CasaOvest">
+            <span class="property-image-tag">2024年3月竣工</span>
+          </div>
+          <div class="property-body">
+            <p class="property-num">Property 02</p>
+            <h3 class="property-name">Casa Ovest</h3>
+            <div class="property-sub">
+              <span>📍 横浜市西区西戸部町</span>
+              <span class="property-sep">|</span>
+              <span>🚃 京急本線 戸部駅 徒歩11分</span>
+            </div>
+            <div class="property-specs">
+              <div class="spec-item"><div class="spec-label">総戸数</div><div class="spec-value">8戸（1K×6 / 1LDK×2）</div></div>
+              <div class="spec-item"><div class="spec-label">構造・築年</div><div class="spec-value">木造 2024年3月</div></div>
+              <div class="spec-item"><div class="spec-label">土地面積</div><div class="spec-value">232㎡</div></div>
+              <div class="spec-item"><div class="spec-label">表面利回り</div><div class="spec-value accent">7.35%</div></div>
+            </div>
+            <p class="property-desc">
+              1LDK（47㎡+ロフト）×2戸と1K×6戸の混在型。
+              横浜中心部・みなとみらいへのアクセス良好な西区に立地。
+              不動産鑑定評価額1億2,000万円。劣化対策等級3級取得。稼働率98%。
+            </p>
+            <div class="occupancy-wrap">
+              <div class="occupancy-header"><span>稼働率</span><span>98%（8戸中 7.84戸相当）</span></div>
+              <div class="occupancy-bar"><div class="occupancy-fill" style="width:98%"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Casa Terzo -->
+        <div class="property-item reveal">
+          <div class="property-image-wrap">
+            <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=900&q=80" alt="CasaTerzo">
+            <span class="property-image-tag">2025年2月竣工</span>
+          </div>
+          <div class="property-body">
+            <p class="property-num">Property 03</p>
+            <h3 class="property-name">Casa Terzo</h3>
+            <div class="property-sub">
+              <span>📍 横浜市神奈川区松見町</span>
+              <span class="property-sep">|</span>
+              <span>🚃 JR横浜線 大口駅 徒歩8分</span>
+            </div>
+            <div class="property-specs">
+              <div class="spec-item"><div class="spec-label">総戸数</div><div class="spec-value">9戸（1K×9）</div></div>
+              <div class="spec-item"><div class="spec-label">構造・築年</div><div class="spec-value">木造 2025年2月</div></div>
+              <div class="spec-item"><div class="spec-label">土地面積</div><div class="spec-value">93㎡</div></div>
+              <div class="spec-item"><div class="spec-label">表面利回り</div><div class="spec-value accent">7.07%</div></div>
+            </div>
+            <p class="property-desc">
+              3階建て1K×9戸。18〜20㎡の使いやすい間取りで、各階3室の整然とした構成。
+              東神奈川エリアの利便性が高く、横浜・川崎へのアクセスも良好。
+              不動産鑑定評価額1億2,700万円。劣化対策等級3級取得。稼働率98%。
+            </p>
+            <div class="occupancy-wrap">
+              <div class="occupancy-header"><span>稼働率</span><span>98%（9戸中 8.82戸相当）</span></div>
+              <div class="occupancy-bar"><div class="occupancy-fill" style="width:98%"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Casa Candai -->
+        <div class="property-item reverse reveal reveal-delay-1">
+          <div class="property-image-wrap">
+            <img src="https://images.unsplash.com/photo-1574362848149-11496d93a7c7?auto=format&fit=crop&w=900&q=80" alt="CasaCandai">
+            <span class="property-image-tag">2025年7月竣工</span>
+          </div>
+          <div class="property-body">
+            <p class="property-num">Property 04</p>
+            <h3 class="property-name">Casa Candai</h3>
+            <div class="property-sub">
+              <span>📍 横浜市神奈川区神大寺</span>
+              <span class="property-sep">|</span>
+              <span>🚃 市営ブルーライン 片倉町駅 徒歩6分</span>
+            </div>
+            <div class="property-specs">
+              <div class="spec-item"><div class="spec-label">総戸数</div><div class="spec-value">10戸（1K×10）</div></div>
+              <div class="spec-item"><div class="spec-label">構造・築年</div><div class="spec-value">木造 2025年7月</div></div>
+              <div class="spec-item"><div class="spec-label">土地面積</div><div class="spec-value">185㎡</div></div>
+              <div class="spec-item"><div class="spec-label">表面利回り</div><div class="spec-value accent">7.32%</div></div>
+            </div>
+            <p class="property-desc">
+              SANDSの最大規模物件、10戸。1K（17㎡）と1K+ロフト（5.9〜8.6㎡）の2タイプ構成。
+              ブルーライン沿線で横浜市内の主要ターミナルへの直通アクセスが強み。
+              劣化対策等級2級取得。取得直後から満室稼働継続中。
+            </p>
+            <div class="occupancy-wrap">
+              <div class="occupancy-header"><span>稼働率</span><span style="color:var(--color-accent);font-weight:500;">100%（満室）</span></div>
+              <div class="occupancy-bar"><div class="occupancy-fill" style="width:100%"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Casa Altana -->
+        <div class="property-item reveal">
+          <div class="property-image-wrap">
+            <img src="https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?auto=format&fit=crop&w=900&q=80" alt="CasaAltana">
+            <span class="property-image-tag">2026年3月竣工</span>
+          </div>
+          <div class="property-body">
+            <p class="property-num">Property 05</p>
+            <h3 class="property-name">Casa Altana</h3>
+            <div class="property-sub">
+              <span>📍 横浜市港南区港南</span>
+              <span class="property-sep">|</span>
+              <span>🚃 市営ブルーライン 港南中央駅 徒歩5分</span>
+            </div>
+            <div class="property-specs">
+              <div class="spec-item"><div class="spec-label">総戸数</div><div class="spec-value">6戸（1K×6）</div></div>
+              <div class="spec-item"><div class="spec-label">構造・築年</div><div class="spec-value">木造 2026年3月</div></div>
+              <div class="spec-item"><div class="spec-label">土地面積</div><div class="spec-value">246㎡</div></div>
+              <div class="spec-item"><div class="spec-label">表面利回り</div><div class="spec-value accent">7.60%</div></div>
+            </div>
+            <p class="property-desc">
+              2026年3月竣工の最新物件。港南区の閑静な住宅地に立地し、港南中央駅から
+              徒歩5分の好立地。1K（17㎡）6戸。竣工と同時に全室入居済み。
+              劣化対策等級3級取得。SANDSの中で最高利回りを誇る。
+            </p>
+            <div class="occupancy-wrap">
+              <div class="occupancy-header"><span>稼働率</span><span style="color:var(--color-accent);font-weight:500;">100%（満室）</span></div>
+              <div class="occupancy-bar"><div class="occupancy-fill" style="width:100%"></div></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Management Standards -->
+      <div style="margin-top:80px;">
+        <p class="section-eyebrow reveal">Management Standards</p>
+        <h2 class="section-title reveal reveal-delay-1">全物件共通の管理基準</h2>
+        <p class="section-lead reveal reveal-delay-2">
+          保有物件数が増えても入居者満足度を落とさないために、<br>
+          管理オペレーションを標準化・仕組み化しています。
+        </p>
+        <div class="mgmt-grid reveal reveal-delay-2">
+          <div class="mgmt-card">
+            <div class="mgmt-icon">🌐</div>
+            <div class="mgmt-title">全物件 光回線完備</div>
+            <div class="mgmt-body">
+              2025年度中に全5棟への高速インターネット回線導入を完了。
+              入居者の生活の質向上とともに、空室リスクの低減にも寄与しています。
+            </div>
+          </div>
+          <div class="mgmt-card">
+            <div class="mgmt-icon">🧹</div>
+            <div class="mgmt-title">全物件 月次清掃</div>
+            <div class="mgmt-body">
+              地域シェアリングプラットフォーム（COSOJI）を活用した定期清掃を
+              全物件に標準化。良好な住環境の維持と物件価値の向上を図っています。
+            </div>
+          </div>
+          <div class="mgmt-card">
+            <div class="mgmt-icon">🏗️</div>
+            <div class="mgmt-title">劣化対策等級 取得</div>
+            <div class="mgmt-body">
+              全物件が劣化対策等級（2〜3級）を取得。長期的な建物品質の担保と、
+              金融機関からの評価向上・融資条件の改善に活用しています。
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="cta-inner">
+      <p class="section-eyebrow" style="color:var(--color-accent-light);justify-content:center;">Contact &amp; Documents</p>
+      <h2 class="cta-title">詳細資料・物件情報のお問い合わせ</h2>
+      <p class="cta-body">
+        レントロール、物件プロフィール（PDF）などの詳細資料は
+        面談後にご提供しています。金融機関・投資家の方のご連絡をお待ちしています。
+      </p>
+      <div class="cta-buttons">
+        <a href="contact.html" class="btn btn-primary">お問い合わせ</a>
+        <a href="docs/index.html" class="btn btn-outline-white">資料ダウンロード</a>
+        <a href="financial.html" class="btn btn-outline-white">財務情報を見る</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <p class="footer-logo">SANDS</p>
+        <p class="footer-tagline">Sustainable AND Smile</p>
+      </div>
+      <nav class="footer-nav">
+        <a href="index.html#mission">理念</a>
+        <a href="index.html#philosophy">経営姿勢</a>
+        <a href="properties.html">物件情報</a>
+        <a href="financial.html">財務情報</a>
+        <a href="news.html">ニュース</a>
+        <a href="company.html">会社情報</a>
+        <a href="contact.html">お問い合わせ</a>
+        <a href="docs/index.html">資料ダウンロード</a>
+      </nav>
+      <p class="footer-copy">&copy; 2022 合同会社SANDS All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="assets/js/main.js"></script>
+  <script>
+  (function(){
+    var logo = document.querySelector('.nav-logo');
+    if (!logo) return;
+    var clicks = 0, timer = null;
+    logo.addEventListener('click', function(e){
+      e.preventDefault();
+      clicks++;
+      if (clicks === 1) timer = setTimeout(function(){ clicks = 0; }, 1500);
+      if (clicks >= 5) {
+        clearTimeout(timer); clicks = 0;
+        window.location.href = '/members/';
+      }
+    });
+  })();
+  </script>
+</body>
+</html>

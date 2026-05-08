@@ -141,5 +141,22 @@
   </footer>
 
   <script src="assets/js/main.js"></script>
+  <script>
+  // 隠しリンク: .nav-logo（SANDSロゴ）を1.5秒以内に5回クリックでメンバーページへ
+  (function(){
+    var logo = document.querySelector('.nav-logo');
+    if (!logo) return;
+    var clicks = 0, timer = null;
+    logo.addEventListener('click', function(e){
+      e.preventDefault();
+      clicks++;
+      if (clicks === 1) timer = setTimeout(function(){ clicks = 0; }, 1500);
+      if (clicks >= 5) {
+        clearTimeout(timer); clicks = 0;
+        window.location.href = '/members/';
+      }
+    });
+  })();
+  </script>
 </body>
 </html>

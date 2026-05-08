@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SANDS 財務ダッシュボード — 物件管理</title>
+    <link rel="stylesheet" href="sands-style.css">
+    <style>
+        /* ---- 物件タブバー ---- */
+        .prop-tabbar { display:flex; background:#1a3d6e; border-bottom:3px solid #0e2548; overflow-x:auto; scrollbar-width:none; position:sticky; top:48px; z-index:150 }
+        .prop-tabbar::-webkit-scrollbar { display:none }
+        .prop-tab { display:flex; flex-direction:column; align-items:center; padding:10px 18px; cursor:pointer; color:rgba(255,255,255,0.6); font-size:13px; font-weight:600; border-right:1px solid rgba(255,255,255,0.1); white-space:nowrap; transition:all 0.15s; text-decoration:none; min-width:80px }
+        .prop-tab:hover { background:rgba(255,255,255,0.08); color:#fff }
+        .prop-tab.active { background:#fff; color:#1a3d6e; border-bottom:3px solid #1a3d6e; margin-bottom:-3px }
+        .prop-tab .prop-tab-sub { font-size:9px; font-weight:400; margin-top:2px; opacity:0.75 }
+        .prop-tab.active .prop-tab-sub { opacity:0.6; color:#64748b }
+        /* ---- 物件KPIカード ---- */
+        .prop-kpi-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:16px }
+        @media(max-width:700px){ .prop-kpi-grid { grid-template-columns:1fr } }
+        .prop-kpi { background:#fff; border:1px solid #e5e7eb; border-radius:10px; padding:14px 16px }
+        .prop-kpi-label { font-size:10px; color:#64748b; font-weight:700; text-transform:uppercase; letter-spacing:0.5px }
+        .prop-kpi-value { font-size:22px; font-weight:800; color:#1a3d6e; margin:4px 0 2px }
+        .prop-kpi-sub { font-size:11px; color:#94a3b8 }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="header-brand">
+        <div class="header-logo">S</div>
+        <div class="header-title">
+            <h1>SANDS 財務ダッシュボード</h1>
+            <p>合同会社SANDS ｜ 資産管理のすべて ｜ 内部管理資料</p>
+        </div>
+    </div>
+    <div class="header-meta">
+        <strong>基準日：2026年3月31日（FY25確定）</strong>
+        <span>更新日：2026-05-02</span>
+    </div>
+</div>
+
+<div class="page-nav">
+    <div class="pnav-item"><a href="dashboard.html" class="pnav-link">🏠 ホーム</a></div>
+    <div class="pnav-item">
+        <a href="financials.html" class="pnav-link">📋 財務・借入</a>
+    </div>
+    <div class="pnav-item"><a href="monthly.html?fy=26" class="pnav-link">📅 月次トラッカー</a></div>
+    <div class="pnav-item">
+        <a href="properties-detail.html" class="pnav-link active">🏘️ 物件管理 <span class="pnav-arrow">▾</span></a>
+        <div class="pnav-dropdown">
+            <a href="properties-detail.html">📦 全物件ポートフォリオ</a>
+            <a href="properties-detail.html?prop=1" data-prop="1">🏠 CasaBruno</a>
+            <a href="properties-detail.html?prop=2" data-prop="2">🏠 CasaOvest</a>
+            <a href="properties-detail.html?prop=3" data-prop="3">🏠 CasaTerzo</a>
+            <a href="properties-detail.html?prop=4" data-prop="4">🏠 CasaCandai</a>
+            <a href="properties-detail.html?prop=5" data-prop="5">🏠 CasaAltana</a>
+        </div>
+    </div>
+    <div class="pnav-item">
+        <a href="assets.html" class="pnav-link">📉 資産管理 <span class="pnav-arrow">▾</span></a>
+        <div class="pnav-dropdown">
+            <a href="assets.html#sec-depreciation">📉 減価償却</a>
+            <a href="assets.html#sec-bm">🔧 BM集計</a>
+            <a href="assets.html#sec-lots">📜 筆一覧</a>
+        </div>
+    </div>
+    <div class="pnav-item"><a href="import.html" class="pnav-link">⬆️ データ取込</a></div>
+</div>
+
+<!-- 物件タブバー -->
+<div class="prop-tabbar" id="propTabBar">
+    <a class="prop-tab" href="properties-detail.html" data-prop="all">全物件<span class="prop-tab-sub">5棟 41戸</span></a>
+    <a class="prop-tab" href="properties-detail.html?prop=1" data-prop="1">Bruno<span class="prop-tab-sub">8戸｜保土ヶ谷</span></a>
+    <a class="prop-tab" href="properties-detail.html?prop=2" data-prop="2">Ovest<span class="prop-tab-sub">8戸｜戸部</span></a>
+    <a class="prop-tab" href="properties-detail.html?prop=3" data-prop="3">Terzo<span class="prop-tab-sub">9戸｜大口</span></a>
+    <a class="prop-tab" href="properties-detail.html?prop=4" data-prop="4">Candai<span class="prop-tab-sub">10戸｜片倉町</span></a>
+    <a class="prop-tab" href="properties-detail.html?prop=5" data-prop="5">Altana<span class="prop-tab-sub">6戸｜港南中央</span></a>
+</div>
+
+    <div class="nav-item" onclick="navScrollTo(event,'sec-occ')">📊 入居率推移</div>
+    <div class="nav-item" onclick="navScrollTo(event,'sec-rent')">💰 賃料集計</div>
+</div>
+    <div class="nav-item" onclick="navScrollTo(event,'sec-prop-occ')">📊 入居率推移</div>
+    <div class="nav-item" onclick="navScrollTo(event,'sec-prop-rentroll')">📄 レントロール</div>
+</div>
+
+<!-- ===== 全物件ビュー ===== -->
+<div id="propAllView">
+<div class="container">
+
+<div class="section" id="sec-property">
+    <div class="section-title">
+        🏘️ 物件ポートフォリオ（5棟 41戸）
+        <span class="badge-title">横浜市内 全新築木造</span>
+    </div>
+    <div class="card" style="overflow-x:auto">
+        <div id="propertyGrid"></div>
+    </div>
+</div>
+
+<!-- ===== 入居率推移（全物件） ===== -->
+<div class="section" id="sec-occ">
+    <div class="section-title">📊 入居率推移<span class="badge-title">物件別・月次平均</span></div>
+    <div class="card" style="margin-bottom:16px">
+        <div class="card-title">📈 入居率推移 − 全物件（月次平均）
+            <span id="occRevEstBadge" style="display:none;margin-left:8px;font-size:10px;background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:10px;font-weight:600">▲ 収支報告データあり</span>
+        </div>
+        <div class="chart-wrap chart-wrap-lg"><canvas id="portfolioOccChart"></canvas></div>
+        <div style="margin-top:8px;font-size:10px;color:#64748b">
+            実線: Excelデータ（入居率.xlsx）  ／  点線▲: 収支報告書ベース推定（revenue ÷ 満室月収）
+        </div>
+    </div>
+    <div class="grid-2">
+        <div class="card">
+            <div class="card-title">📋 FY別 年間入居率</div>
+            <div id="fyOccTable"><p style="color:#999;font-size:12px;padding:8px">読込中...</p></div>
+        </div>
+        <div class="card">
+            <div class="card-title">💡 データ更新について</div>
+            <div style="font-size:12px;line-height:1.7;color:#374151">
+                <p style="margin-bottom:10px">収支報告書を取り込むと、入居率が自動で反映されます。</p>
+                <div style="padding:8px 10px;background:#f0faf5;border-radius:6px;margin-bottom:8px;font-size:11px">
+                    <strong>📥 更新手順</strong><br>
+                    <a href="import.html" style="color:#1a3d6e;font-weight:700">⬆️ データ取込</a> で収支報告書PDFをインポート<br>
+                    → このページをリロードすると最新の入居率が反映
+                </div>
+                <div style="padding:8px 10px;background:#fff7ed;border-radius:6px;font-size:11px;color:#92400e">
+                    ⚠️ bricks社報告（Bruno+Ovest合算）は2棟同一の推定値になります
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="section" id="sec-rent">
+    <div class="section-title">
+        💰 賃料集計
+        <span class="badge-title">満室想定 月額 304万円</span>
+    </div>
+    <div class="grid-2">
+        <div class="card">
+            <div class="card-title">📊 物件別 月額賃料（満室想定）</div>
+            <div class="chart-wrap chart-wrap-md"><canvas id="rentBarChart"></canvas></div>
+        </div>
+        <div class="card">
+            <div class="card-title">📋 賃料収入サマリー</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>物件</th>
+                        <th class="text-right">月額(満室)</th>
+                        <th class="text-right">年間収入</th>
+                        <th class="text-right">表面利回り</th>
+                        <th class="text-right">稼働率</th>
+                        <th class="text-right">月次CF概算</th>
+                    </tr>
+                </thead>
+                <tbody id="rentTableBody"></tbody>
+                <tfoot>
+                    <tr>
+                        <td class="fw-bold">合計</td>
+                        <td class="text-right fw-bold">304万</td>
+                        <td class="text-right fw-bold">3,650万</td>
+                        <td class="text-right fw-bold">7.47%</td>
+                        <td class="text-right fw-bold text-success">98.5%</td>
+                        <td class="text-right fw-bold">+20万</td>
+                    </tr>
+                </tfoot>
+            </table>
+            <div style="margin-top:12px;padding:10px;background:#f0faf5;border-radius:8px;font-size:11px;border-left:3px solid var(--success)">
+                <strong>月次CF試算：</strong>賃料収入 216万（実収・98.5%稼働）− 返済 156.5万 − 経費概算 39万 ≒ <strong>+20万円/月</strong>
+                <div style="color:var(--text-light);margin-top:4px">※経費概算：管理費・清掃・保険・修繕積立 etc.（年間4〜5%ベース）</div>
+            </div>
+        </div>
+    </div>
+    <div style="margin-top:16px">
+        <div class="card">
+            <div class="card-title">📈 年次 賃料収入・戸数推移（FY22〜FY36）</div>
+            <div class="chart-wrap chart-wrap-md"><canvas id="rentTimeChart"></canvas></div>
+        </div>
+    </div>
+</div>
+
+</div>
+</div><!-- /propAllView -->
+
+<!-- ===== 単一物件ビュー ===== -->
+<div id="propSingleView" style="display:none">
+<div class="container">
+
+    <div class="section" id="sec-prop-info">
+        <div class="section-title" id="singlePropTitle">🏠 物件情報</div>
+        <div class="prop-kpi-grid" id="singleKpiGrid"></div>
+        <div class="grid-2">
+            <div class="card">
+                <div class="card-title">📋 物件基本情報</div>
+                <table id="singleInfoTable"></table>
+            </div>
+            <div class="card" id="sec-prop-loan">
+                <div class="card-title">🏦 借入情報</div>
+                <table id="singleLoanTable"></table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 入居率推移（単一物件） -->
+    <div class="section" id="sec-prop-occ">
+        <div class="section-title">📊 入居率推移<span class="badge-title" id="singleOccFySub"></span></div>
+        <div class="card" style="margin-bottom:16px">
+            <div class="chart-wrap" style="height:240px"><canvas id="singleOccChart"></canvas></div>
+            <div style="margin-top:6px;font-size:10px;color:#64748b">
+                実線: Excelデータ  ／  点線▲: 収支報告書ベース推定
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+                <span>🏠 区画別 入居状況</span>
+                <div style="display:flex;align-items:center;gap:6px">
+                    <button id="heatmapPrevBtn" onclick="changeHeatmapFY(-1)"
+                        style="padding:4px 10px;border:1px solid #cbd5e1;border-radius:6px;background:#f8fafc;font-size:12px;cursor:pointer;font-weight:700">← 前年度</button>
+                    <span id="heatmapFYLabel" style="font-size:13px;font-weight:700;color:#1a3d6e;min-width:60px;text-align:center">—</span>
+                    <button id="heatmapNextBtn" onclick="changeHeatmapFY(+1)"
+                        style="padding:4px 10px;border:1px solid #cbd5e1;border-radius:6px;background:#f8fafc;font-size:12px;cursor:pointer;font-weight:700">次年度 →</button>
+                </div>
+            </div>
+            <div id="roomHeatmap"><p style="color:#999;font-size:12px;padding:8px">データ読込中...</p></div>
+        </div>
+    </div>
+
+    <div class="section" id="sec-prop-rentroll">
+        <div class="section-title">📄 レントロール
+            <span class="badge-title" id="singleOccBadge"></span>
+        </div>
+        <div style="text-align:right;margin-bottom:8px">
+            <button onclick="openOccModal()" style="padding:7px 16px;background:#1a3d6e;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">
+                📝 入退去を編集
+            </button>
+        </div>
+        <div class="card">
+            <div id="singleRentrollContainer"></div>
+        </div>
+    </div>
+
+</div>
+</div><!-- /propSingleView -->
+
+<!-- ===== 入居状況 編集モーダル ===== -->
+<div id="roomEditOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:900" onclick="closeRoomEditModal()"></div>
+<div id="roomEditModal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:901;background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.25);width:360px;max-width:95vw;font-family:inherit">
+    <div style="background:#1a3d6e;color:#fff;padding:14px 18px;border-radius:16px 16px 0 0;display:flex;justify-content:space-between;align-items:center">
+        <div>
+            <div id="editModalTitle" style="font-weight:700;font-size:14px"></div>
+            <div id="editModalSub" style="font-size:11px;opacity:.75;margin-top:2px"></div>
+        </div>
+        <button onclick="closeRoomEditModal()" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;line-height:1">×</button>
+    </div>
+    <div style="padding:16px 18px">
+
+        <!-- クイックボタン -->
+        <div style="display:flex;gap:8px;margin-bottom:14px">
+            <button onclick="applyRoomEdit('full')"
+                style="flex:1;padding:10px;background:#d1fae5;color:#065f46;border:2px solid #6ee7b7;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer">
+                ✅ 全月入居
+            </button>
+            <button onclick="applyRoomEdit('vacant')"
+                style="flex:1;padding:10px;background:#fee2e2;color:#991b1b;border:2px solid #fca5a5;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer">
+                ❌ 空室
+            </button>
+        </div>
+
+        <div style="border-top:1px solid #e2e8f0;padding-top:12px;display:flex;flex-direction:column;gap:10px">
+
+            <!-- 入居日 -->
+            <div style="background:#f8fafc;border-radius:8px;padding:10px 12px">
+                <label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:6px">📅 入居日（その日から月末まで入居）</label>
+                <div style="display:flex;align-items:center;gap:8px">
+                    <span id="editYear" style="font-size:12px;color:#64748b"></span>年
+                    <span id="editMonthDisp" style="font-size:12px;color:#64748b"></span>月
+                    <input id="editMoveInDay" type="number" min="1" max="31" placeholder="日"
+                        style="width:60px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font-size:14px;text-align:center"
+                        oninput="previewEdit('movein')">
+                    <span style="font-size:12px;color:#64748b">日から</span>
+                    <button onclick="applyRoomEdit('movein')"
+                        style="padding:6px 12px;background:#1a3d6e;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer">適用</button>
+                </div>
+            </div>
+
+            <!-- 退去日 -->
+            <div style="background:#f8fafc;border-radius:8px;padding:10px 12px">
+                <label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:6px">🚪 退去日（月初から退去日まで入居）</label>
+                <div style="display:flex;align-items:center;gap:8px">
+                    <span style="font-size:12px;color:#64748b">月初〜</span>
+                    <input id="editMoveOutDay" type="number" min="1" max="31" placeholder="日"
+                        style="width:60px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font-size:14px;text-align:center"
+                        oninput="previewEdit('moveout')">
+                    <span style="font-size:12px;color:#64748b">日まで</span>
+                    <button onclick="applyRoomEdit('moveout')"
+                        style="padding:6px 12px;background:#1a3d6e;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer">適用</button>
+                </div>
+            </div>
+
+            <!-- 日数直接入力 -->
+            <div style="background:#f8fafc;border-radius:8px;padding:10px 12px">
+                <label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:6px">🔢 入居日数を直接入力</label>
+                <div style="display:flex;align-items:center;gap:8px">
+                    <input id="editDaysInput" type="number" min="0" max="31" placeholder="日数"
+                        style="width:60px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font-size:14px;text-align:center"
+                        oninput="previewEdit('days')">
+                    <span id="editDaysTotal" style="font-size:12px;color:#64748b">/ — 日</span>
+                    <button onclick="applyRoomEdit('days')"
+                        style="padding:6px 12px;background:#1a3d6e;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer">適用</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- プレビュー -->
+        <div id="editPreview" style="margin-top:12px;padding:10px;background:#ede9fe;border-radius:8px;text-align:center;font-weight:700;color:#5b21b6;display:none">
+            → 入居率: <span id="editPreviewVal"></span>%
+        </div>
+
+        <!-- 削除 -->
+        <div style="margin-top:12px;border-top:1px solid #e2e8f0;padding-top:10px;display:flex;justify-content:space-between;align-items:center">
+            <button id="editClearBtn" onclick="clearCurrentRoomEdit()"
+                style="padding:7px 14px;background:#fff;color:#dc2626;border:1px solid #fca5a5;border-radius:6px;font-size:11px;cursor:pointer">
+                🗑️ 編集データを削除（元に戻す）
+            </button>
+            <span id="editCurrentVal" style="font-size:11px;color:#64748b"></span>
+        </div>
+    </div>
+</div>
+
+<div class="footer">
+    © 合同会社SANDS（代表：須藤朋子）　本資料は内部管理用です。外部への共有・転載・複製を禁じます。<br>
+    Generated by SANDS AI秘書（ベン） ｜ 2026-05-02
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="sands-data.js"></script>
+<script src="data/monthly_reports_data.js" onerror="console.log('monthly_reports_data.js not found')"></script>
+<script src="data/occupancy_data.js" onerror="console.log('occupancy_data.js not found')"></script>
+<script>
+// ---- URL param ----
+const _propId = parseInt(new URLSearchParams(location.search).get('prop')) || null;
+const PROP_COLORS = ['#1a3d6e','#2e7cb8','#0e8c6c','#7b2d8b','#c94a1a'];
+
+document.addEventListener('DOMContentLoaded', function() {
+    // タブのアクティブ状態
+    document.querySelectorAll('#propTabBar a').forEach(a => {
+        const p = new URL(a.href, location.href).searchParams.get('prop');
+        const active = (p === null && !_propId) || (p !== null && parseInt(p) === _propId);
+        if (active) a.classList.add('active');
+    });
+
+    if (_propId) {
+        document.getElementById('propAllView').style.display  = 'none';
+        document.getElementById('propSingleView').style.display = 'block';
+        document.getElementById('navAll').style.display    = 'none';
+        document.getElementById('navSingle').style.display = 'flex';
+        renderSinglePropView(_propId);
+        renderSingleOccupancyChart(_propId);
+        renderRoomHeatmap(_propId);
+    } else {
+        renderPropertyGrid();
+        renderRentTable();
+        renderRentBarChart();
+        renderRentTimeChart();
+        renderPortfolioOccupancyChart();
+        renderFYOccupancyTable();
+    }
+});
+
+// =============================================
+// 入居率 — 収支報告から自動計算
+// =============================================
+
+// 収支報告（SANDS_MONTHLY_JSON）から物件別・月別の入居率を算出
+// revenue ÷ 満室月収 で推定（bricks社はBruno+Ovest合算）
+function calcOccFromReports() {
+    const json = window.SANDS_MONTHLY_JSON;
+    if (!json?.reports?.length) return {};
+
+    const result = {};
+    const findProp = name => SANDS.properties.find(p => p.nameShort === name);
+
+    json.reports.forEach(r => {
+        if (!r.month || !r.revenue) return;
+
+        if (r.company === 'bricks') {
+            // Bruno + Ovest 合算 → 比例配分して個別推定
+            const bRent = findProp('Bruno')?.monthlyRent || 0;
+            const oRent = findProp('Ovest')?.monthlyRent || 0;
+            const total = bRent + oRent;
+            if (!total) return;
+            // 全体入居率（合算）
+            const combinedRate = Math.min(100, r.revenue / total * 100);
+            ['Bruno', 'Ovest'].forEach(s => {
+                if (!result[s]) result[s] = {};
+                result[s][r.month] = Math.round(combinedRate * 10) / 10;
+            });
+        } else {
+            // 物件ごとの個別報告
+            (r.properties || []).forEach(fullName => {
+                const short = fullName.replace('Casa', '');
+                const p = findProp(short);
+                if (!p) return;
+                // 礼金・敷金が含まれる初月は過大になるので 100% でキャップ
+                const rate = Math.min(100, r.revenue / p.monthlyRent * 100);
+                if (!result[short]) result[short] = {};
+                result[short][r.month] = Math.round(rate * 10) / 10;
+            });
+        }
+    });
+    return result;
+}
+
+// レントロールの since/until から特定月の区画稼働状況を返す
+function getRoomOccForMonth(propId, roomObj, monthStr) {
+    // monthStr = 'YYYY-MM'
+    const parse = s => {
+        if (!s) return null;
+        const parts = s.split('.');
+        return `${parts[0]}-${parts[1].padStart(2, '0')}`;
+    };
+    const since = parse(roomObj.since);
+    const until = parse(roomObj.until);
+    if (!since) return 'unknown';
+    if (monthStr < since) return 'vacant';
+    if (until && monthStr > until) return 'vacant';
+    // localStorage の手動設定があれば優先
+    const date = new Date(monthStr + '-15');
+    const status = typeof getRoomStatus === 'function'
+        ? getRoomStatus(propId, roomObj, date)
+        : 'occupied';
+    return status;
+}
+
+// =============================================
+// 入居状況 手動編集 — localStorage管理
+// =============================================
+const ROOM_EDIT_KEY = 'sands_room_occ_edits';
+
+function loadRoomEdits() {
+    return JSON.parse(localStorage.getItem(ROOM_EDIT_KEY) || '{}');
+}
+function saveRoomEdit(propShort, month, roomId, rate) {
+    const edits = loadRoomEdits();
+    if (!edits[propShort]) edits[propShort] = {};
+    if (!edits[propShort][month]) edits[propShort][month] = {};
+    edits[propShort][month][roomId] = Math.round(rate * 10) / 10;
+    localStorage.setItem(ROOM_EDIT_KEY, JSON.stringify(edits));
+}
+function clearRoomEdit(propShort, month, roomId) {
+    const edits = loadRoomEdits();
+    if (edits[propShort]?.[month]) {
+        delete edits[propShort][month][roomId];
+        if (!Object.keys(edits[propShort][month]).length) delete edits[propShort][month];
+        localStorage.setItem(ROOM_EDIT_KEY, JSON.stringify(edits));
+    }
+}
+function daysInMonth(yearMonth) {
+    const [y, m] = yearMonth.split('-').map(Number);
+    return new Date(y, m, 0).getDate();
+}
+
+// 編集データを月別平均に変換（チャート用）
+// 各部屋: 編集値 > Excel区画値 > レントロールsince/until
+function getEditedMonthlyAvg(propShort) {
+    const edits = loadRoomEdits()[propShort] || {};
+    if (!Object.keys(edits).length) return {};
+    const prop = SANDS.properties.find(p => p.nameShort === propShort);
+    if (!prop) return {};
+
+    const result = {};
+    Object.entries(edits).forEach(([month, roomRates]) => {
+        const allRates = prop.rentroll.map(r => {
+            const rid = r.room;
+            if (roomRates[rid] !== undefined) return roomRates[rid];
+            const excelRate = window.SANDS_OCCUPANCY?.rooms?.[propShort]?.[month]?.[rid];
+            if (excelRate !== undefined) return excelRate;
+            const status = getRoomOccForMonth(prop.id, r, month);
+            return status === 'occupied' ? 100 : status === 'vacant' ? 0 : null;
+        }).filter(v => v !== null);
+        if (allRates.length) {
+            result[month] = Math.round(allRates.reduce((a,b)=>a+b,0) / prop.units * 10) / 10;
+        }
+    });
+    return result;
+}
+
+// Excel歴史データ＋収支報告＋手動編集を合成（編集が最優先）
+// 引渡前の月は除外
+function getMergedOccupancy(propShort) {
+    const excelMonthly = window.SANDS_OCCUPANCY?.monthly?.[propShort] || {};
+    const reportData   = calcOccFromReports()[propShort] || {};
+    const editedAvg    = getEditedMonthlyAvg(propShort);
+    const merged = { ...excelMonthly, ...reportData, ...editedAvg };
+
+    // 竣工月より前のデータを削除 ＆ 竣工月を 0% の起点として統一
+    const prop = SANDS.properties.find(p => p.nameShort === propShort);
+    const completionMonth = getPropCompletionMonth(prop);
+    if (completionMonth) {
+        Object.keys(merged).forEach(m => { if (m < completionMonth) delete merged[m]; });
+        // 竣工月は常に 0% から始める（手動編集がある場合はそちら優先）
+        if (merged[completionMonth] === undefined) merged[completionMonth] = 0;
+    }
+    return merged;
+}
+
+// =============================================
+// 入居率チャート — 全物件ポートフォリオ
+// =============================================
+function renderPortfolioOccupancyChart() {
+    const propNames = ['Bruno','Ovest','Terzo','Candai','Altana'];
+
+    // 全月を収集（Excel歴史 + 収支報告）
+    const monthSet = new Set();
+    propNames.forEach(n => {
+        Object.keys(getMergedOccupancy(n)).forEach(m => monthSet.add(m));
+    });
+    const months = Array.from(monthSet).sort();
+
+    if (!months.length) {
+        document.getElementById('portfolioOccChart').closest('.card').innerHTML =
+            '<p style="padding:20px;color:#999;text-align:center;font-size:12px">📥 <a href="import.html">収支報告を取込む</a>と入居率が表示されます</p>';
+        return;
+    }
+
+    // 収支報告データがあればバッジ表示
+    const reportData = calcOccFromReports();
+    if (Object.values(reportData).some(d => Object.keys(d).length > 0)) {
+        document.getElementById('occRevEstBadge').style.display = '';
+    }
+
+    // 物件ごとに1本の連続線（Excel+収支報告を合成）
+    const datasets = propNames.map((name, i) => ({
+        label: name,
+        data: months.map(m => getMergedOccupancy(name)[m] ?? null),
+        borderColor: PROP_COLORS[i],
+        backgroundColor: PROP_COLORS[i] + '18',
+        tension: 0.3,
+        spanGaps: false,
+        pointRadius: 2,
+        borderWidth: 2,
+        fill: false,
+    }));
+
+    const ctx = document.getElementById('portfolioOccChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: { labels: months.map(m => m.slice(2)), datasets },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            scales: {
+                y: {
+                    min: 0, max: 102,
+                    ticks: { callback: v => v > 100 ? '' : v + '%', stepSize: 25 },
+                    title: { display: true, text: '入居率 (%)', font: { size: 10 } }
+                },
+                x: { ticks: { maxTicksLimit: 20, maxRotation: 45, font: { size: 10 } } }
+            },
+            plugins: {
+                legend: { position: 'top', labels: { font: { size: 10 }, boxWidth: 14 } },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => {
+                            const v = ctx.raw;
+                            if (v === null) return null;
+                            // 収支報告由来の月は「(収支報告)」と補足
+                            const isReport = reportData[ctx.dataset.label]?.[months[ctx.dataIndex]] !== undefined;
+                            return `${ctx.dataset.label}: ${v.toFixed(1)}%${isReport ? ' (収支報告)' : ''}`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// =============================================
+// 入居率テーブル — FY別サマリー
+// =============================================
+function renderFYOccupancyTable() {
+    const el  = document.getElementById('fyOccTable');
+    const occ = window.SANDS_OCCUPANCY;
+
+    const propNames = ['Bruno','Ovest','Terzo','Candai','Altana'];
+    const fys = ['FY22','FY23','FY24','FY25'];
+    const completionFY = { Bruno:'FY22', Ovest:'FY24', Terzo:'FY25', Candai:'FY25', Altana:'FY25' };
+
+    // FY26は収支報告データから月次入居率を算出（4月以降）
+    const reportByProp = calcOccFromReports();
+    const fyStart = fy => `20${String(fy).padStart(2,'0')}-04`;
+    const fyEnd   = fy => `20${String(fy+1).padStart(2,'0')}-03`;
+    function calcFYAvg(propShort, fy) {
+        const merged = getMergedOccupancy(propShort);
+        const s = fyStart(fy), e = fyEnd(fy);
+        const vals = Object.entries(merged)
+            .filter(([m]) => m >= s && m <= e)
+            .map(([, v]) => v);
+        return vals.length ? Math.round(vals.reduce((a,b)=>a+b,0)/vals.length*10)/10 : null;
+    }
+
+    let html = `<table style="width:100%;border-collapse:collapse;font-size:12px">
+    <thead><tr style="border-bottom:2px solid #1a3d6e">
+        <th style="padding:6px 4px;text-align:left">物件</th>
+        ${fys.map(fy => `<th style="padding:6px 4px;text-align:right">${fy}</th>`).join('')}
+        <th style="padding:6px 4px;text-align:right;color:#1a6eb5">FY26</th>
+    </tr></thead><tbody>`;
+
+    propNames.forEach((name, i) => {
+        const excelFY = occ?.fy?.[name] || {};
+        html += `<tr style="border-bottom:1px solid #f1f5f9">
+            <td style="padding:6px 4px;font-weight:700;color:${PROP_COLORS[i]}">${name}</td>`;
+
+        fys.forEach(fy => {
+            // Excel確定値優先、なければ月次集計
+            const exNum = parseInt(fy.replace('FY',''));
+            const v = excelFY[fy] ?? calcFYAvg(name, exNum);
+            if (v === null) {
+                const isCmp = fy === completionFY[name];
+                html += `<td style="padding:6px 4px;text-align:right;font-size:10px;color:#94a3b8">${isCmp ? '竣工' : '—'}</td>`;
+            } else {
+                const bg = v >= 95 ? '#d1fae5' : v >= 90 ? '#fef3c7' : '#fee2e2';
+                const tc = v >= 95 ? '#065f46' : v >= 90 ? '#92400e' : '#991b1b';
+                html += `<td style="padding:6px 4px;text-align:right">
+                    <span style="background:${bg};color:${tc};padding:2px 6px;border-radius:10px;font-weight:700;font-size:11px">${v}%</span></td>`;
+            }
+        });
+
+        // FY26（収支報告データのある月のみ）
+        const fy26avg = calcFYAvg(name, 26);
+        if (fy26avg !== null) {
+            const bg = fy26avg >= 95 ? '#dbeafe' : '#e0f2fe';
+            html += `<td style="padding:6px 4px;text-align:right">
+                <span style="background:${bg};color:#1a3d6e;padding:2px 6px;border-radius:10px;font-weight:700;font-size:11px">${fy26avg}%</span>
+                <span style="font-size:9px;color:#94a3b8;display:block">速報</span></td>`;
+        } else {
+            html += `<td style="padding:6px 4px;text-align:right;font-size:10px;color:#94a3b8">—</td>`;
+        }
+
+        html += '</tr>';
+    });
+
+    // ポートフォリオ行
+    const eoy25 = occ?.portfolioEOY?.FY25;
+    html += `<tr style="border-top:2px solid #1a3d6e;background:#f8fafc">
+        <td style="padding:6px 4px;font-weight:700;font-size:11px">全体（年度末断面）</td>
+        <td colspan="3" style="padding:6px 4px;text-align:right;color:#94a3b8;font-size:11px">—</td>
+        <td style="padding:6px 4px;text-align:right">
+            <span style="background:#e0f2fe;color:#0369a1;padding:2px 6px;border-radius:10px;font-weight:700;font-size:11px">${eoy25 ? eoy25 + '%' : '—'}</span>
+            <span style="font-size:9px;color:#94a3b8;display:block">FY25末</span></td>
+        <td style="padding:6px 4px;text-align:right;color:#94a3b8;font-size:10px">—</td>
+    </tr>`;
+
+    html += '</tbody></table>';
+    html += '<div style="margin-top:8px;font-size:10px;color:#94a3b8">FY26は収支報告取込済み月の平均。FY25年度末断面は3月31日時点。</div>';
+    el.innerHTML = html;
+}
+
+// =============================================
+// 入居率チャート — 単一物件
+// =============================================
+let _singleOccChartInst = null;
+function renderSingleOccupancyChart(propId) {
+    const prop = SANDS.properties.find(p => p.id === propId);
+    if (!prop) return;
+
+    const propShort = prop.nameShort;
+    const color     = PROP_COLORS[propId - 1] || '#1a3d6e';
+
+    // Excel + 収支報告 を合成した月次データ
+    const merged = getMergedOccupancy(propShort);
+    const months = Object.keys(merged).sort();
+
+    // FYサブラベル（Excel確定値 + FY26速報）
+    const excelFY = window.SANDS_OCCUPANCY?.fy?.[propShort] || {};
+    const fyParts = Object.entries(excelFY).map(([fy, v]) => `${fy}: ${v}%`);
+    const subEl = document.getElementById('singleOccFySub');
+    if (subEl) subEl.textContent = fyParts.join('  ') || '';
+
+    if (!months.length) {
+        document.getElementById('singleOccChart').closest('.card').innerHTML =
+            '<p style="padding:16px;color:#999;font-size:12px;text-align:center">📥 <a href="import.html">収支報告を取込む</a>と入居率が表示されます</p>';
+        return;
+    }
+
+    // 収支報告由来の月をマーク（色変えに使用）
+    const reportData = calcOccFromReports()[propShort] || {};
+
+    const ctx = document.getElementById('singleOccChart').getContext('2d');
+    if (_singleOccChartInst) _singleOccChartInst.destroy();
+    _singleOccChartInst = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: months.map(m => m.slice(2)),
+            datasets: [{
+                label: `${prop.nameShort} 入居率`,
+                data: months.map(m => merged[m] ?? null),
+                borderColor: months.map(m => reportData[m] !== undefined ? '#f59e0b' : color),
+                // Chart.jsはdatasetレベルのborderColorしか使わないため一色で統一し点で区別
+                borderColor: color,
+                backgroundColor: color + '18',
+                tension: 0.3,
+                spanGaps: false,
+                pointRadius: months.map(m => reportData[m] !== undefined ? 5 : 2),
+                pointStyle: months.map(m => reportData[m] !== undefined ? 'triangle' : 'circle'),
+                pointBackgroundColor: months.map(m => reportData[m] !== undefined ? '#f59e0b' : color),
+                borderWidth: 2,
+                fill: true,
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            scales: {
+                y: {
+                    min: 0, max: 102,
+                    ticks: { callback: v => v > 100 ? '' : v + '%', stepSize: 25 },
+                },
+                x: { ticks: { maxTicksLimit: 16, maxRotation: 45, font: { size: 10 } } }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => {
+                            const m = months[ctx.dataIndex];
+                            const v = ctx.raw;
+                            if (v === null) return null;
+                            const src = reportData[m] !== undefined ? '収支報告▲' : 'Excelデータ';
+                            return `入居率: ${v.toFixed(1)}%  (${src})`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// =============================================
+// 区画別ヒートマップ（直近12ヶ月）
+// 収支報告取込後はレントロールのsince/untilから自動判定
+// =============================================
+// structure フィールド（例: '木造 2022年6月'）から竣工月（YYYY-MM）を取得
+function getPropCompletionMonth(prop) {
+    const m = prop?.structure?.match(/(\d{4})年(\d{1,2})月/);
+    if (!m) return null;
+    return `${m[1]}-${m[2].padStart(2, '0')}`;
+}
+
+// 現在表示中のFY（物件ID別）
+const _heatmapFY = {};
+
+// その物件で入居実績のある全FYを返す
+function getAvailableFYs(propShort, propId) {
+    const prop = SANDS.properties.find(p => p.id === propId);
+    const monthSet = new Set([
+        ...Object.keys(window.SANDS_OCCUPANCY?.rooms?.[propShort] || {}),
+        ...Object.keys(calcOccFromReports()[propShort] || {}),
+        ...Object.keys(loadRoomEdits()[propShort] || {}),
+    ]);
+    // レントロールのsince月も追加（竣工月から現在まで）
+    if (prop) {
+        const today = new Date();
+        prop.rentroll.forEach(r => {
+            if (!r.since) return;
+            const [sy, sm] = r.since.split('.').map(Number);
+            const cur = new Date(sy, sm - 1, 1);
+            while (cur <= today) {
+                monthSet.add(`${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,'0')}`);
+                cur.setMonth(cur.getMonth() + 1);
+            }
+        });
+    }
+    const fySet = new Set();
+    monthSet.forEach(m => {
+        const [y, mo] = m.split('-').map(Number);
+        fySet.add(mo >= 4 ? y - 2000 : y - 2001);
+    });
+    return Array.from(fySet).sort();
+}
+
+// FYの12ヶ月リスト（4月〜翌3月）
+function fyToMonths(fy) {
+    const months = [];
+    for (let m = 4; m <= 12; m++)
+        months.push(`20${String(fy).padStart(2,'0')}-${String(m).padStart(2,'0')}`);
+    for (let m = 1; m <= 3; m++)
+        months.push(`20${String(fy+1).padStart(2,'0')}-${String(m).padStart(2,'0')}`);
+    return months;
+}
+
+function changeHeatmapFY(delta) {
+    if (!_heatmapFY._propId) return;
+    const propId    = _heatmapFY._propId;
+    const prop      = SANDS.properties.find(p => p.id === propId);
+    const propShort = prop?.nameShort;
+    const fys       = getAvailableFYs(propShort, propId);
+    const cur       = _heatmapFY[propId] ?? fys[fys.length - 1];
+    const idx       = fys.indexOf(cur);
+    const newIdx    = Math.max(0, Math.min(fys.length - 1, idx + delta));
+    _heatmapFY[propId] = fys[newIdx];
+    renderRoomHeatmap(propId);
+}
+
+function renderRoomHeatmap(propId) {
+    const el   = document.getElementById('roomHeatmap');
+    const prop = SANDS.properties.find(p => p.id === propId);
+    if (!prop) { el.innerHTML = '<p style="color:#999;font-size:12px;padding:8px">データなし</p>'; return; }
+
+    const propShort  = prop.nameShort;
+    const excelRooms = window.SANDS_OCCUPANCY?.rooms?.[propShort] || {};
+    const reportData = calcOccFromReports()[propShort] || {};
+
+    // 表示FYを決定
+    _heatmapFY._propId = propId;
+    const fys = getAvailableFYs(propShort, propId);
+    if (!fys.length) {
+        el.innerHTML = '<p style="color:#999;font-size:12px;padding:8px">データなし（収支報告を取込むか入居日を入力してください）</p>';
+        return;
+    }
+    if (!_heatmapFY[propId]) _heatmapFY[propId] = fys[fys.length - 1]; // 最新FYをデフォルト
+    const currentFY = _heatmapFY[propId];
+    const fyIdx     = fys.indexOf(currentFY);
+
+    // ナビボタン更新
+    const labelEl = document.getElementById('heatmapFYLabel');
+    const prevBtn  = document.getElementById('heatmapPrevBtn');
+    const nextBtn  = document.getElementById('heatmapNextBtn');
+    if (labelEl) labelEl.textContent = `FY${currentFY}`;
+    if (prevBtn)  prevBtn.disabled   = fyIdx <= 0;
+    if (nextBtn)  nextBtn.disabled   = fyIdx >= fys.length - 1;
+    if (prevBtn)  prevBtn.style.opacity = fyIdx <= 0 ? '0.3' : '1';
+    if (nextBtn)  nextBtn.style.opacity = fyIdx >= fys.length - 1 ? '0.3' : '1';
+    if (prevBtn && fys[fyIdx - 1]) prevBtn.textContent = `← FY${fys[fyIdx - 1]}`;
+    if (nextBtn && fys[fyIdx + 1]) nextBtn.textContent = `FY${fys[fyIdx + 1]} →`;
+
+    // 表示する12ヶ月
+    const today      = new Date().toISOString().slice(0, 7);
+    const showMonths = fyToMonths(currentFY);
+
+    // 区画リスト（レントロール基準）
+    const rooms = prop.rentroll.map(r => r.room).sort();
+    const roomEdits = loadRoomEdits()[propShort] || {};
+    const completionMonth = getPropCompletionMonth(prop); // 引渡月（これ以前は空欄）
+
+    let html = `<div style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;font-size:11px;min-width:400px">
+    <thead><tr>
+        <th style="padding:5px 8px;text-align:left;border-bottom:2px solid #e2e8f0">区画</th>`;
+
+    showMonths.forEach(m => {
+        const isFuture  = m > today;
+        const hasEdit   = !!roomEdits[m];
+        const hasExcel  = !!excelRooms[m];
+        const hasReport = !!reportData[m];
+        let src = '';
+        if (hasEdit)                     src = '<br><span style="font-size:8px;color:#7c3aed;font-weight:700">✏️編集</span>';
+        else if (!hasExcel && hasReport) src = '<br><span style="font-size:8px;color:#f59e0b;font-weight:700">📥報告</span>';
+        else if (isFuture)               src = '<br><span style="font-size:8px;color:#cbd5e1">未来</span>';
+        const thStyle = isFuture
+            ? 'padding:5px 4px;text-align:center;border-bottom:2px solid #e2e8f0;white-space:nowrap;color:#cbd5e1'
+            : 'padding:5px 4px;text-align:center;border-bottom:2px solid #e2e8f0;white-space:nowrap';
+        html += `<th style="${thStyle}">${m.slice(2)}${src}</th>`;
+    });
+    html += '</tr></thead><tbody>';
+
+    rooms.forEach(roomId => {
+        const rl = prop.rentroll.find(r => r.room === roomId);
+        html += `<tr style="border-bottom:1px solid #f1f5f9">
+            <td style="padding:5px 8px;font-weight:700">${roomId}
+                ${rl ? `<span style="font-size:9px;color:#64748b;display:block">${rl.rent.toLocaleString()}円</span>` : ''}
+            </td>`;
+
+        showMonths.forEach(m => {
+            const isFuture        = m > today;
+            const isBeforeHandover = completionMonth && m < completionMonth;
+            const editedRate      = roomEdits[m]?.[roomId];
+            const isEdited        = editedRate !== undefined;
+            let bg, label, tc = '#374151';
+
+            if (isBeforeHandover && !isEdited) {
+                // 引渡前：完全空欄（クリック不可）
+                html += `<td style="padding:5px 4px;background:#f8fafc"></td>`;
+                return;
+            } else if (isFuture && !isEdited) {
+                // 未来月：薄グレー（編集は可能）
+                bg='#f8fafc'; label='—'; tc='#e2e8f0';
+            } else if (isEdited) {
+                const v = editedRate;
+                if (v >= 97)     { bg='#ede9fe'; label='✓'; tc='#5b21b6'; }
+                else if (v >= 1) { bg='#ede9fe'; label=Math.round(v)+'%'; tc='#5b21b6'; }
+                else             { bg='#f5f3ff'; label='空室'; tc='#7c3aed'; }
+            } else if (excelRooms[m]) {
+                const v = excelRooms[m][roomId];
+                if (v === undefined)  { bg='#f8fafc'; label='—'; tc='#cbd5e1'; }
+                else if (v >= 97)     { bg='#d1fae5'; label='✓'; tc='#065f46'; }
+                else if (v >= 50)     { bg='#fef3c7'; label=Math.round(v)+'%'; tc='#92400e'; }
+                else if (v > 0)       { bg='#ffedd5'; label=Math.round(v)+'%'; tc='#c2410c'; }
+                else                  { bg='#fee2e2'; label='空室'; tc='#991b1b'; }
+            } else {
+                const status = getRoomOccForMonth(propId, rl || { room: roomId }, m);
+                if (status === 'occupied')    { bg='#d1fae5'; label='✓'; tc='#065f46'; }
+                else if (status === 'vacant') { bg='#fee2e2'; label='空室'; tc='#991b1b'; }
+                else                          { bg='#f1f5f9'; label='?'; tc='#94a3b8'; }
+            }
+
+            const editBorder = isEdited ? 'outline:2px solid #7c3aed;' : '';
+            html += `<td
+                onclick="openRoomEditModal('${propShort}',${propId},'${m}','${roomId}')"
+                title="${m} ${roomId}号室をクリックして編集"
+                style="padding:5px 4px;text-align:center;background:${bg};color:${tc};font-weight:600;cursor:pointer;${editBorder}position:relative">
+                ${label}<span style="position:absolute;bottom:1px;right:2px;font-size:8px;opacity:0.3">✏️</span>
+            </td>`;
+        });
+        html += '</tr>';
+    });
+
+    html += `</tbody></table></div>`;
+    html += `<div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;font-size:10px;color:#64748b;align-items:center">
+        <span><span style="background:#d1fae5;padding:2px 8px;border-radius:4px;color:#065f46;font-weight:700">✓</span> 入居中</span>
+        <span><span style="background:#fef3c7;padding:2px 8px;border-radius:4px;color:#92400e">%</span> 月中入居</span>
+        <span><span style="background:#fee2e2;padding:2px 8px;border-radius:4px;color:#991b1b">空室</span> 空室</span>
+        <span><span style="background:#ede9fe;padding:2px 8px;border-radius:4px;color:#5b21b6;outline:2px solid #7c3aed">✏️</span> 手動編集済</span>
+        <span style="margin-left:auto;color:#1a3d6e;font-weight:700">← セルをクリックで編集</span>
+    </div>`;
+    el.innerHTML = html;
+}
+
+// ---- 単一物件ビュー ----
+function renderSinglePropView(propId) {
+    const p = SANDS.properties.find(x => x.id === propId);
+    if (!p) return;
+
+    const today   = new Date();
+    const occ     = calculateOccupancy(p);
+    const occColor = occ === 100 ? '#27ae60' : occ >= 90 ? '#e8a020' : '#e74c3c';
+    const ltv     = (p.loan.balance / p.acquisitionCost * 100).toFixed(1);
+    const ltvColor = parseFloat(ltv) > 80 ? '#e74c3c' : parseFloat(ltv) > 60 ? '#e8a020' : '#27ae60';
+    const cf      = Math.round((p.monthlyRent - p.loan.monthlyPayment) / 10000);
+    const propIdx = SANDS.properties.findIndex(x => x.id === propId);
+    const color   = PROP_COLORS[propIdx] || '#1a3d6e';
+
+    // タイトル
+    document.getElementById('singlePropTitle').innerHTML =
+        `<span style="border-left:5px solid ${color};padding-left:10px">${p.name}</span>
+         <span class="badge-title">${p.address}</span>`;
+    document.getElementById('singleOccBadge').textContent =
+        `稼働率 ${occ}%（${p.rentroll.filter(r=>getRoomStatus(p.id,r,today)!=='vacant').length}/${p.units}戸）`;
+
+    // KPIカード
+    document.getElementById('singleKpiGrid').innerHTML = `
+        <div class="prop-kpi">
+            <div class="prop-kpi-label">💰 年間収入（満室）</div>
+            <div class="prop-kpi-value">${Math.round(p.annualRent/10000)}万</div>
+            <div class="prop-kpi-sub">月額 ${Math.round(p.monthlyRent/10000)}万円</div>
+        </div>
+        <div class="prop-kpi">
+            <div class="prop-kpi-label">📊 稼働率</div>
+            <div class="prop-kpi-value" style="color:${occColor}">${occ}%</div>
+            <div class="prop-kpi-sub">${p.units}戸中 ${p.rentroll.filter(r=>getRoomStatus(p.id,r,today)!=='vacant').length}戸入居</div>
+        </div>
+        <div class="prop-kpi">
+            <div class="prop-kpi-label">📈 表面利回り</div>
+            <div class="prop-kpi-value">${fmt.pct(p.yield)}</div>
+            <div class="prop-kpi-sub">取得価格 ${fmt.man(p.acquisitionCost)}</div>
+        </div>
+        <div class="prop-kpi">
+            <div class="prop-kpi-label">🏦 借入残高</div>
+            <div class="prop-kpi-value">${fmt.man(p.loan.balance)}</div>
+            <div class="prop-kpi-sub">${p.loan.bank} / ${p.loan.rate.toFixed(3)}%</div>
+        </div>
+        <div class="prop-kpi">
+            <div class="prop-kpi-label">📉 LTV</div>
+            <div class="prop-kpi-value" style="color:${ltvColor}">${ltv}%</div>
+            <div class="prop-kpi-sub">残存 ${p.loan.remainYears}年</div>
+        </div>
+        <div class="prop-kpi">
+            <div class="prop-kpi-label">💵 月次CF概算</div>
+            <div class="prop-kpi-value" style="color:${cf>=0?'#27ae60':'#e74c3c'}">${cf>=0?'+':''}${cf}万</div>
+            <div class="prop-kpi-sub">賃料 − P&I ${Math.round(p.loan.monthlyPayment/10000)}万</div>
+        </div>
+    `;
+
+    // 物件情報テーブル
+    document.getElementById('singleInfoTable').innerHTML = `
+        <tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px;width:90px">所在地</th><td style="padding:6px 8px;font-size:12px">${p.address}</td></tr>
+        <tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px">アクセス</th><td style="padding:6px 8px;font-size:12px">${p.access}</td></tr>
+        <tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px">構造・竣工</th><td style="padding:6px 8px;font-size:12px">${p.structure}</td></tr>
+        <tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px">間取り</th><td style="padding:6px 8px;font-size:12px">${p.layout}（${p.units}戸）</td></tr>
+        <tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px">取得原価</th><td style="padding:6px 8px;font-size:12px;font-weight:700">${fmt.man(p.acquisitionCost)}</td></tr>
+        <tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px">鑑定評価額</th><td style="padding:6px 8px;font-size:12px">${p.appraisal ? fmt.man(p.appraisal) : '—'}</td></tr>
+    `;
+
+    // 借入テーブル
+    document.getElementById('singleLoanTable').innerHTML = `
+        <tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px;width:90px">銀行</th><td style="padding:6px 8px;font-size:12px">${p.loan.bank}</td></tr>
+        <tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px">残債</th><td style="padding:6px 8px;font-size:12px;font-weight:700">${fmt.man(p.loan.balance)}</td></tr>
+        <tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px">金利</th><td style="padding:6px 8px;font-size:12px">${p.loan.rate.toFixed(3)}%（${p.loan.rateType}）</td></tr>
+        <tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px">方式</th><td style="padding:6px 8px;font-size:12px">${p.loan.type}</td></tr>
+        <tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px">月次P&I</th><td style="padding:6px 8px;font-size:12px;font-weight:700">${fmt.man(p.loan.monthlyPayment)}</td></tr>
+        <tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px">残存年数</th><td style="padding:6px 8px;font-size:12px">${p.loan.remainYears}年</td></tr>
+        <tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px">LTV</th><td style="padding:6px 8px;font-size:12px;font-weight:700;color:${ltvColor}">${ltv}%</td></tr>
+    `;
+
+    // レントロール（この物件のみ）
+    renderSingleRentroll(p);
+}
+
+function renderSingleRentroll(p) {
+    const container = document.getElementById('singleRentrollContainer');
+    const today     = new Date();
+    const overrides = loadOccupancyOverrides();
+    const totalRent  = p.rentroll.reduce((s,r) => s+r.rent,  0);
+    const totalFee   = p.rentroll.reduce((s,r) => s+r.fee,   0);
+    const totalTotal = p.rentroll.reduce((s,r) => s+r.total, 0);
+
+    const rows = p.rentroll.map(r => {
+        const areaMatch = r.layout.match(/(\d+\.?\d*)㎡/);
+        const sqmPrice  = areaMatch ? Math.round(r.rent / parseFloat(areaMatch[1])).toLocaleString() : '—';
+        const status    = getRoomStatus(p.id, r, today);
+        const badge     = getRoomStatusBadge(status);
+        const key       = `${p.id}-${r.room}`;
+        const ov        = overrides[key] || {};
+        const untilStr  = (ov.until !== undefined) ? ov.until : (r.until || '');
+        const rowBg     = status === 'vacant' ? 'background:#fff5f5' : status === 'leaving-soon' ? 'background:#fffbeb' : '';
+        return `<tr style="${rowBg}">
+            <td class="fw-bold">${r.room}</td>
+            <td>${r.layout}</td>
+            <td class="text-right">${r.rent.toLocaleString()}</td>
+            <td class="text-right text-muted" style="font-size:10px">${sqmPrice}</td>
+            <td class="text-right">${r.fee.toLocaleString()}</td>
+            <td class="text-right fw-bold">${r.total.toLocaleString()}</td>
+            <td class="text-right" style="white-space:nowrap">${r.since || '—'}</td>
+            <td style="white-space:nowrap">
+                <div id="occ-badge-${p.id}-${r.room}" style="display:inline-block">
+                    ${badge}
+                    <button onclick="toggleOccupancyEdit(${p.id},'${r.room}','${untilStr}')"
+                        title="退去日を編集"
+                        style="margin-left:4px;padding:1px 5px;font-size:9px;border:1px solid #d1d5db;border-radius:4px;background:#f9fafb;cursor:pointer;color:#6b7280">✏️</button>
+                </div>
+            </td>
+            <td class="text-muted" style="font-size:10px">${untilStr ? '退去: '+untilStr : (r.note||'')}</td>
+        </tr>`;
+    }).join('');
+
+    container.innerHTML = `
+        <table>
+            <thead>
+                <tr>
+                    <th>部屋</th><th>間取り・面積</th>
+                    <th class="text-right">家賃</th><th class="text-right">㎡単価</th>
+                    <th class="text-right">共益費</th><th class="text-right">合計</th>
+                    <th class="text-right">入居月</th><th>入居状況</th><th>備考</th>
+                </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="2" class="fw-bold">合計</td>
+                    <td class="text-right">${totalRent.toLocaleString()}</td><td></td>
+                    <td class="text-right">${totalFee.toLocaleString()}</td>
+                    <td class="text-right fw-bold">${totalTotal.toLocaleString()}</td>
+                    <td colspan="3"></td>
+                </tr>
+            </tfoot>
+        </table>`;
+}
+
+// ---- 入退去管理モーダル ----
+function openOccModal() { buildOccEditTable(); document.getElementById('occupancyModal').style.display = 'block'; }
+function closeOccModal() { document.getElementById('occupancyModal').style.display = 'none'; }
+
+function buildOccEditTable() {
+    const today    = new Date();
+    const overrides = loadOccupancyOverrides();
+    const tbody    = document.getElementById('occEditBody');
+    tbody.innerHTML = '';
+    const props = _propId
+        ? SANDS.properties.filter(p => p.id === _propId)
+        : SANDS.properties;
+
+    props.forEach((p, pi) => {
+        const color = PROP_COLORS[SANDS.properties.findIndex(x=>x.id===p.id)] || '#1a3d6e';
+        p.rentroll.forEach((r, ri) => {
+            const key   = `${p.id}-${r.room}`;
+            const ov    = overrides[key] || {};
+            const since = ov.since !== undefined ? ov.since : (r.since || '');
+            const until = ov.until !== undefined ? ov.until : (r.until || '');
+            const status = getRoomStatus(p.id, r, today);
+            const tr = document.createElement('tr');
+            tr.style.cssText = `border-bottom:1px solid #e5e7eb;background:${ri%2===0?'#fff':'#f9fafb'}`;
+            tr.innerHTML = `
+              <td style="padding:8px 12px;font-weight:700;border-left:4px solid ${color};white-space:nowrap">${p.nameShort}</td>
+              <td style="padding:8px 12px;text-align:center;font-weight:700">${r.room}</td>
+              <td style="padding:8px 12px;font-size:11px;color:#6b7280;white-space:nowrap">${r.layout}</td>
+              <td style="padding:8px 12px;text-align:right;white-space:nowrap">${r.rent.toLocaleString()}円</td>
+              <td style="padding:8px 12px;text-align:center">
+                <input type="text" class="occ-since" data-key="${key}" placeholder="例: 2026.4"
+                  value="${since}" maxlength="10"
+                  style="width:80px;padding:4px 6px;border:1.5px solid #d1d5db;border-radius:4px;font-size:11px;text-align:center">
+              </td>
+              <td style="padding:8px 12px;text-align:center">
+                <input type="text" class="occ-until" data-key="${key}" placeholder="退去予定なし"
+                  value="${until}" maxlength="10"
+                  style="width:90px;padding:4px 6px;border:1.5px solid ${until?'#fca5a5':'#d1d5db'};border-radius:4px;font-size:11px;text-align:center;color:${until?'#991b1b':'#374151'}">
+              </td>
+              <td style="padding:8px 12px;text-align:center">${getRoomStatusBadge(status)}</td>
+              <td style="padding:8px 12px;font-size:10px;color:#6b7280">${r.note||''}</td>`;
+            tbody.appendChild(tr);
+        });
+    });
+    tbody.querySelectorAll('.occ-until').forEach(inp => {
+        inp.addEventListener('input', function() {
+            this.style.borderColor = this.value ? '#fca5a5' : '#d1d5db';
+            this.style.color       = this.value ? '#991b1b' : '#374151';
+        });
+    });
+}
+
+function saveAllOccupancy() {
+    const overrides = loadOccupancyOverrides();
+    document.querySelectorAll('#occEditBody tr').forEach(tr => {
+        const si = tr.querySelector('.occ-since');
+        const ui = tr.querySelector('.occ-until');
+        if (!si) return;
+        const key = si.dataset.key;
+        if (!overrides[key]) overrides[key] = {};
+        if (si.value.trim()) overrides[key].since = si.value.trim(); else delete overrides[key].since;
+        if (ui.value.trim()) overrides[key].until = ui.value.trim(); else delete overrides[key].until;
+        if (!Object.keys(overrides[key]).length) delete overrides[key];
+    });
+    saveOccupancyOverrides(overrides);
+    if (_propId) {
+        const p = SANDS.properties.find(x => x.id === _propId);
+        if (p) renderSingleRentroll(p);
+        renderPropertyGrid();
+    } else {
+        renderPropertyGrid(); renderRentTable();
+    }
+    buildOccEditTable();
+    document.getElementById('occModalSubtitle').textContent = '✅ 保存しました！';
+    setTimeout(() => { document.getElementById('occModalSubtitle').textContent = '入居日・退去予定日を編集して「保存」してください'; }, 2000);
+}
+
+function resetOccupancyOverrides() {
+    if (!confirm('ローカルに保存した入退去データをすべてリセットしますか？')) return;
+    saveOccupancyOverrides({});
+    if (_propId) { const p = SANDS.properties.find(x=>x.id===_propId); if(p) renderSingleRentroll(p); }
+    else { renderPropertyGrid(); renderRentTable(); }
+    buildOccEditTable();
+}
+
+// =============================================
+// 入居状況 編集モーダル
+// =============================================
+let _editState = { propShort: null, propId: null, month: null, roomId: null };
+
+function openRoomEditModal(propShort, propId, month, roomId) {
+    _editState = { propShort, propId, month, roomId };
+
+    const [y, m] = month.split('-');
+    const totalDays = daysInMonth(month);
+    const rl = SANDS.properties.find(p => p.id === propId)
+                   ?.rentroll.find(r => r.room === roomId);
+
+    document.getElementById('editModalTitle').textContent = `${propShort} ${roomId}号室`;
+    document.getElementById('editModalSub').textContent   = `${y}年${parseInt(m)}月（${totalDays}日間）`;
+    document.getElementById('editYear').textContent       = y;
+    document.getElementById('editMonthDisp').textContent  = parseInt(m);
+    document.getElementById('editDaysTotal').textContent  = `/ ${totalDays}日`;
+
+    // 現在の編集済みデータ
+    const existing = loadRoomEdits()[propShort]?.[month]?.[roomId];
+    const currentStr = existing !== undefined
+        ? `現在: ${existing >= 97 ? '✓全月入居' : existing === 0 ? '空室' : existing + '%'} (編集済)`
+        : rl ? `since: ${rl.since}${rl.until ? ' / until: ' + rl.until : ''}` : '';
+    document.getElementById('editCurrentVal').textContent = currentStr;
+    document.getElementById('editClearBtn').style.display = existing !== undefined ? '' : 'none';
+
+    // 入力クリア
+    ['editMoveInDay','editMoveOutDay','editDaysInput'].forEach(id => {
+        document.getElementById(id).value = '';
+    });
+    document.getElementById('editPreview').style.display = 'none';
+
+    document.getElementById('roomEditOverlay').style.display = '';
+    document.getElementById('roomEditModal').style.display   = '';
+    document.getElementById('editMoveInDay').focus();
+}
+
+function closeRoomEditModal() {
+    document.getElementById('roomEditOverlay').style.display = 'none';
+    document.getElementById('roomEditModal').style.display   = 'none';
+}
+
+function calcEditRate(type) {
+    const { month } = _editState;
+    const total = daysInMonth(month);
+    if (type === 'full')    return 100;
+    if (type === 'vacant')  return 0;
+    if (type === 'movein') {
+        const day = parseInt(document.getElementById('editMoveInDay').value);
+        if (!day || day < 1 || day > total) return null;
+        return Math.round((total - day + 1) / total * 1000) / 10;
+    }
+    if (type === 'moveout') {
+        const day = parseInt(document.getElementById('editMoveOutDay').value);
+        if (!day || day < 1 || day > total) return null;
+        return Math.round(day / total * 1000) / 10;
+    }
+    if (type === 'days') {
+        const days = parseInt(document.getElementById('editDaysInput').value);
+        if (days === undefined || days < 0 || days > total) return null;
+        return Math.round(days / total * 1000) / 10;
+    }
+    return null;
+}
+
+function previewEdit(type) {
+    const rate = calcEditRate(type);
+    const el   = document.getElementById('editPreview');
+    if (rate === null) { el.style.display = 'none'; return; }
+    document.getElementById('editPreviewVal').textContent = rate.toFixed(1);
+    el.style.display = '';
+}
+
+function applyRoomEdit(type) {
+    const rate = calcEditRate(type);
+    if (rate === null) { alert('日を正しく入力してください'); return; }
+    const { propShort, propId, month, roomId } = _editState;
+    saveRoomEdit(propShort, month, roomId, rate);
+    closeRoomEditModal();
+    // ヒートマップとチャートを再描画
+    renderRoomHeatmap(propId);
+    if (_singleOccChartInst) {
+        _singleOccChartInst.destroy();
+        _singleOccChartInst = null;
+    }
+    renderSingleOccupancyChart(propId);
+}
+
+function clearCurrentRoomEdit() {
+    const { propShort, propId, month, roomId } = _editState;
+    clearRoomEdit(propShort, month, roomId);
+    closeRoomEditModal();
+    renderRoomHeatmap(propId);
+    if (_singleOccChartInst) { _singleOccChartInst.destroy(); _singleOccChartInst = null; }
+    renderSingleOccupancyChart(propId);
+}
+</script>
+
+<!-- 入退去管理モーダル -->
+<div id="occupancyModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;overflow:auto">
+  <div style="background:#fff;max-width:1100px;margin:30px auto;border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
+    <div style="background:#1a3d6e;color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:16px;font-weight:700">📝 入退去管理</div>
+        <div id="occModalSubtitle" style="font-size:11px;opacity:0.8;margin-top:2px">入居日・退去予定日を編集して「保存」してください</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onclick="saveAllOccupancy()" style="padding:7px 18px;background:#27ae60;color:#fff;border:none;border-radius:6px;font-weight:700;cursor:pointer;font-size:13px">💾 全件保存</button>
+        <button onclick="closeOccModal()" style="padding:7px 14px;background:rgba(255,255,255,0.15);border:none;color:#fff;border-radius:6px;cursor:pointer;font-size:13px">✕ 閉じる</button>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <table id="occEditTable" style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead>
+          <tr style="background:#f8fafc;border-bottom:2px solid #e5e7eb">
+            <th style="padding:10px 12px;text-align:left">物件</th>
+            <th style="padding:10px 12px;text-align:center">部屋</th>
+            <th style="padding:10px 12px;text-align:left">間取り</th>
+            <th style="padding:10px 12px;text-align:right">賃料</th>
+            <th style="padding:10px 12px;text-align:center;color:#27ae60">入居日</th>
+            <th style="padding:10px 12px;text-align:center;color:#e74c3c">退去予定日</th>
+            <th style="padding:10px 12px;text-align:center">状態</th>
+            <th style="padding:10px 12px;text-align:left">メモ</th>
+          </tr>
+        </thead>
+        <tbody id="occEditBody"></tbody>
+      </table>
+    </div>
+    <div style="padding:12px 20px;background:#f8fafc;border-top:1px solid #e5e7eb;display:flex;gap:10px;align-items:center">
+      <div style="font-size:11px;color:#6b7280">💡 退去予定日を入力すると2ヶ月以内は「退去予定🟡」、過去は「空室🔴」と表示されます</div>
+      <button onclick="resetOccupancyOverrides()" style="margin-left:auto;padding:5px 12px;background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;border-radius:6px;font-size:11px;cursor:pointer">🗑 リセット</button>
+    </div>
+  </div>
+</div>
+
+<div id="propFloatMenuAll" style="display:none;position:fixed;background:#fff;border:1px solid #e2e8f0;border-top:3px solid #1a3d6e;border-radius:0 0 8px 8px;box-shadow:0 8px 24px rgba(0,0,0,0.15);min-width:180px;z-index:500">
+    <a href="#sec-property" style="display:block;padding:11px 18px;font-size:13px;font-weight:500;color:#1e293b;text-decoration:none;border-bottom:1px solid #f0f4f8">🏘️ 物件ポートフォリオ</a>
+    <a href="#sec-occ"      style="display:block;padding:11px 18px;font-size:13px;font-weight:500;color:#1e293b;text-decoration:none;border-bottom:1px solid #f0f4f8">📊 入居率推移</a>
+    <a href="#sec-rent"     style="display:block;padding:11px 18px;font-size:13px;font-weight:500;color:#1e293b;text-decoration:none">💰 賃料集計</a>
+</div>
+<div id="propFloatMenuSingle" style="display:none;position:fixed;background:#fff;border:1px solid #e2e8f0;border-top:3px solid #e8a020;border-radius:0 0 8px 8px;box-shadow:0 8px 24px rgba(0,0,0,0.15);min-width:180px;z-index:500">
+    <a href="#sec-prop-info"     style="display:block;padding:11px 18px;font-size:13px;font-weight:500;color:#1e293b;text-decoration:none;border-bottom:1px solid #f0f4f8">📋 物件情報</a>
+    <a href="#sec-prop-occ"      style="display:block;padding:11px 18px;font-size:13px;font-weight:500;color:#1e293b;text-decoration:none;border-bottom:1px solid #f0f4f8">📊 入居率推移</a>
+    <a href="#sec-prop-rentroll" style="display:block;padding:11px 18px;font-size:13px;font-weight:500;color:#1e293b;text-decoration:none">📄 レントロール</a>
+</div>
+<script>
+(function() {
+    const menuAll    = document.getElementById('propFloatMenuAll');
+    const menuSingle = document.getElementById('propFloatMenuSingle');
+
+    [menuAll, menuSingle].forEach(m => {
+        m.querySelectorAll('a').forEach(a => {
+            a.addEventListener('mouseenter', () => { a.style.background='#f0f4ff'; a.style.paddingLeft='24px'; });
+            a.addEventListener('mouseleave', () => { a.style.background=''; a.style.paddingLeft='18px'; });
+        });
+    });
+
+    let hideTimer = null;
+    function scheduleHide(m) { hideTimer = setTimeout(() => { m.style.display='none'; }, 180); }
+
+    // 全物件タブ
+    const allTab = document.querySelector('.prop-tab[data-prop="all"]');
+    if (allTab) {
+        allTab.addEventListener('mouseenter', () => {
+            clearTimeout(hideTimer);
+            const r = allTab.getBoundingClientRect();
+            menuAll.style.left = r.left + 'px';
+            menuAll.style.top  = r.bottom + 'px';
+            menuAll.style.display = 'block';
+        });
+        allTab.addEventListener('mouseleave', () => scheduleHide(menuAll));
+        menuAll.addEventListener('mouseenter', () => clearTimeout(hideTimer));
+        menuAll.addEventListener('mouseleave', () => scheduleHide(menuAll));
+    }
+
+    // 個別物件タブ
+    document.querySelectorAll('.prop-tab[data-prop]:not([data-prop="all"])').forEach(tab => {
+        tab.addEventListener('mouseenter', () => {
+            clearTimeout(hideTimer);
+            const r = tab.getBoundingClientRect();
+            menuSingle.style.left = r.left + 'px';
+            menuSingle.style.top  = r.bottom + 'px';
+            menuSingle.style.display = 'block';
+        });
+        tab.addEventListener('mouseleave', () => scheduleHide(menuSingle));
+        menuSingle.addEventListener('mouseenter', () => clearTimeout(hideTimer));
+        menuSingle.addEventListener('mouseleave', () => scheduleHide(menuSingle));
+    });
+})();
+</script>
+<!-- hidden_logo_link -->
+<script>
+(function(){
+    var logo = document.querySelector('.header-logo');
+    if (!logo) return;
+    var clicks = 0, timer = null;
+    logo.addEventListener('click', function(e){
+        clicks++;
+        if (clicks === 1) {
+            timer = setTimeout(function(){ clicks = 0; }, 1500);
+        }
+        if (clicks >= 3) {
+            clearTimeout(timer);
+            clicks = 0;
+            location.href = 'private.html';
+        }
+    });
+})();
+</script>
+</body>
+</html>

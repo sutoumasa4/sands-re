@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SANDS 財務ダッシュボード — ホーム</title>
+    <link rel="stylesheet" href="sands-style.css">
+    <style>
+        /* Dashboard 用カスタムスタイルは shared.css の milestone-card に集約 */
+        .trend-table { width:100%; border-collapse:collapse; font-size:11px }
+        .trend-table th { background:#f0f4f8; padding:6px 10px; text-align:right; color:#64748b; border-bottom:2px solid var(--border); white-space:nowrap }
+        .trend-table th:first-child { text-align:left }
+        .trend-table td { padding:6px 10px; border-bottom:1px solid var(--border); text-align:right; white-space:nowrap }
+        .trend-table td:first-child { text-align:left; color:var(--text-light); font-size:10px }
+        .trend-table tr.highlight td { background:#f0f4f8; font-weight:700 }
+        .trend-table tr.proj td { color:#2e7cb8; font-style:italic }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="header-brand">
+        <div class="header-logo">S</div>
+        <div class="header-title">
+            <h1>SANDS 財務ダッシュボード</h1>
+            <p>合同会社SANDS ｜ 資産管理のすべて ｜ 内部管理資料</p>
+        </div>
+    </div>
+    <div class="header-meta">
+        <strong>基準日：2026年3月31日（FY25確定）</strong>
+        <span>更新日：2026-05-02</span>
+    </div>
+</div>
+
+<!-- ========== DROPDOWN PAGE NAV ========== -->
+<div class="page-nav">
+    <div class="pnav-item">
+        <a href="dashboard.html" class="pnav-link active">🏠 ホーム</a>
+    </div>
+    <div class="pnav-item">
+        <a href="financials.html" class="pnav-link">📋 財務・借入</a>
+    </div>
+    <div class="pnav-item">
+        <a href="monthly.html?fy=26" class="pnav-link">📅 月次トラッカー</a>
+    </div>
+    <div class="pnav-item">
+        <a href="properties-detail.html" class="pnav-link">🏘️ 物件管理 <span class="pnav-arrow">▾</span></a>
+        <div class="pnav-dropdown">
+            <a href="properties-detail.html#sec-property">📦 物件カード</a>
+            <a href="properties-detail.html#sec-rentroll">📄 レントロール</a>
+            <a href="properties-detail.html#sec-rent">💰 賃料集計</a>
+        </div>
+    </div>
+    <div class="pnav-item">
+        <a href="assets.html" class="pnav-link">📉 資産管理 <span class="pnav-arrow">▾</span></a>
+        <div class="pnav-dropdown">
+            <a href="assets.html#sec-depreciation">📉 減価償却</a>
+            <a href="assets.html#sec-bm">🔧 BM集計</a>
+            <a href="assets.html#sec-lots">📜 筆一覧</a>
+        </div>
+    </div>
+    <div class="pnav-item">
+        <a href="import.html" class="pnav-link">⬆️ データ取込</a>
+    </div>
+</div>
+
+<div class="container">
+
+<!-- ========== DASHBOARD ========== -->
+<!-- ========== ロードマップ ========== -->
+<div class="section" id="sec-roadmap">
+    <div class="section-title">🗺️ 5ステージ ロードマップ<span class="badge-title">FY22〜FY36 長期計画</span></div>
+    <div class="card">
+        <table>
+            <thead>
+                <tr>
+                    <th>ステージ</th>
+                    <th>期間</th>
+                    <th>重点テーマ</th>
+                    <th>状況</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td class="fw-bold">1ST</td><td style="white-space:nowrap">FY22〜24</td><td style="font-size:12px">初期ポートフォリオ構築・融資実績積み上げ</td><td><span class="badge badge-green">✅ 完了</span></td></tr>
+                <tr style="background:#f0f8ff"><td class="fw-bold" style="color:var(--primary)">2ND</td><td style="white-space:nowrap">FY25〜27</td><td style="font-size:12px">規模拡大・AI/DX化・利益率改善</td><td><span class="badge badge-orange">🚀 進行中</span></td></tr>
+                <tr><td class="fw-bold">3RD</td><td style="white-space:nowrap">FY28〜30</td><td style="font-size:12px">利益率向上・売却オプション検討</td><td><span class="badge badge-gray">📅 計画中</span></td></tr>
+                <tr><td class="fw-bold">4TH</td><td style="white-space:nowrap">FY31〜33</td><td style="font-size:12px">ポートフォリオ最適化・資産入れ替え</td><td><span class="badge badge-gray">📅 長期</span></td></tr>
+                <tr><td class="fw-bold">5TH</td><td style="white-space:nowrap">FY34〜36</td><td style="font-size:12px">事業継承・安定運用・次世代へ</td><td><span class="badge badge-gray">🌿 超長期</span></td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="section" id="sec-dashboard">
+    <div class="section-title">📊 経営ダッシュボード（FY25確定）<span class="badge-title">5ステージ長期計画 ｜ 第4期 2025.4〜2026.3</span></div>
+
+    <!-- 5つの戦略KPIカード -->
+    <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:16px">
+
+        <!-- 重要指標①：総戸数 -->
+        <div class="milestone-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px">
+                <span style="font-size:10px; font-weight:700; color:var(--text-light); letter-spacing:.5px">重要指標①</span>
+                <span style="font-size:9px; background:var(--primary); color:#fff; border-radius:3px; padding:1px 6px">2ND目標: 60戸</span>
+            </div>
+            <div style="font-size:12px; font-weight:700; color:var(--text); margin-bottom:8px">総戸数</div>
+            <div style="display:flex; align-items:baseline; gap:6px">
+                <span style="font-size:38px; font-weight:800; color:var(--primary); line-height:1">41</span>
+                <span style="font-size:16px; color:var(--primary)">戸</span>
+            </div>
+            <div style="display:flex; align-items:stretch; gap:4px; margin-top:10px">
+                <div style="flex:1; text-align:center; padding:5px 2px; background:#f8fafc; border-radius:4px"><div style="font-size:9px; color:var(--text-light)">FY24実績</div><div style="font-size:15px; font-weight:700; color:var(--text-light)">25戸</div></div>
+                <div style="display:flex; align-items:center; color:var(--text-light); font-size:10px">→</div>
+                <div style="flex:1; text-align:center; padding:5px 2px; background:#e8f0fc; border-radius:4px; border:1px solid var(--primary)"><div style="font-size:9px; color:var(--primary)">FY25実績</div><div style="font-size:15px; font-weight:800; color:var(--primary)">41戸</div></div>
+                <div style="display:flex; align-items:center; color:var(--text-light); font-size:10px">→</div>
+                <div style="flex:1; text-align:center; padding:5px 2px; background:#f0f4ff; border-radius:4px"><div style="font-size:9px; color:var(--primary)">FY26目標</div><div style="font-size:15px; font-weight:700; color:var(--primary)">49戸</div></div>
+            </div>
+            <div class="progress-bar" style="height:8px; margin-top:10px"><div class="progress-fill" style="width:68.3%; background:var(--primary)"></div></div>
+            <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-light); margin-top:3px"><span>68.3%達成</span><span>FY27目標</span></div>
+            <div style="display:flex; gap:3px; margin-top:8px">
+                <span style="font-size:8px; background:#27ae60; color:#fff; border-radius:3px; padding:2px 5px; white-space:nowrap">1ST ✓</span>
+                <span style="font-size:8px; background:var(--primary); color:#fff; border-radius:3px; padding:2px 6px; white-space:nowrap; font-weight:700">▶ 2ND</span>
+                <span style="font-size:8px; background:#eee; color:#999; border-radius:3px; padding:2px 5px; white-space:nowrap">3RD</span>
+                <span style="font-size:8px; background:#eee; color:#999; border-radius:3px; padding:2px 5px; white-space:nowrap">4TH</span>
+                <span style="font-size:8px; background:#eee; color:#999; border-radius:3px; padding:2px 5px; white-space:nowrap">5TH</span>
+            </div>
+        </div>
+
+        <!-- 重要指標②：売上高経常利益率 -->
+        <div class="milestone-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px">
+                <span style="font-size:10px; font-weight:700; color:var(--text-light); letter-spacing:.5px">重要指標②</span>
+                <span style="font-size:9px; background:var(--success); color:#fff; border-radius:3px; padding:1px 6px">2ND目標: 10%</span>
+            </div>
+            <div style="font-size:12px; font-weight:700; color:var(--text); margin-bottom:8px">売上高経常利益率</div>
+            <div style="display:flex; align-items:baseline; gap:6px">
+                <span style="font-size:38px; font-weight:800; color:var(--success); line-height:1">5.0</span>
+                <span style="font-size:16px; color:var(--success)">%</span>
+            </div>
+            <div style="display:flex; align-items:stretch; gap:4px; margin-top:10px">
+                <div style="flex:1; text-align:center; padding:5px 2px; background:#f8fafc; border-radius:4px"><div style="font-size:9px; color:var(--text-light)">FY24実績</div><div style="font-size:15px; font-weight:700; color:var(--text-light)">3.0%</div></div>
+                <div style="display:flex; align-items:center; color:var(--text-light); font-size:10px">→</div>
+                <div style="flex:1; text-align:center; padding:5px 2px; background:#f0faf5; border-radius:4px; border:1px solid var(--success)"><div style="font-size:9px; color:var(--success)">FY25実績</div><div style="font-size:15px; font-weight:800; color:var(--success)">5.0%</div></div>
+                <div style="display:flex; align-items:center; color:var(--text-light); font-size:10px">→</div>
+                <div style="flex:1; text-align:center; padding:5px 2px; background:#f0f4ff; border-radius:4px"><div style="font-size:9px; color:var(--primary)">FY26目標</div><div style="font-size:15px; font-weight:700; color:var(--primary)">19.0%</div></div>
+            </div>
+            <div class="progress-bar" style="height:8px; margin-top:10px"><div class="progress-fill" style="width:50%; background:var(--success)"></div></div>
+            <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-light); margin-top:3px"><span>50%達成</span><span>FY27目標</span></div>
+            <div style="display:flex; gap:3px; margin-top:8px">
+                <span style="font-size:8px; background:#27ae60; color:#fff; border-radius:3px; padding:2px 5px; white-space:nowrap">1ST ✓</span>
+                <span style="font-size:8px; background:var(--primary); color:#fff; border-radius:3px; padding:2px 6px; white-space:nowrap; font-weight:700">▶ 2ND</span>
+                <span style="font-size:8px; background:#eee; color:#999; border-radius:3px; padding:2px 5px; white-space:nowrap">3RD</span>
+                <span style="font-size:8px; background:#eee; color:#999; border-radius:3px; padding:2px 5px; white-space:nowrap">4TH</span>
+                <span style="font-size:8px; background:#eee; color:#999; border-radius:3px; padding:2px 5px; white-space:nowrap">5TH</span>
+            </div>
+        </div>
+
+        <!-- 目標指標①：修正自己資本比率 -->
+        <div class="milestone-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px">
+                <span style="font-size:10px; font-weight:700; color:var(--text-light); letter-spacing:.5px">目標指標①</span>
+                <span style="font-size:9px; background:var(--primary); color:#fff; border-radius:3px; padding:1px 6px">2ND目標: 20%</span>
+            </div>
+            <div style="font-size:12px; font-weight:700; color:var(--text); margin-bottom:8px">修正自己資本比率</div>
+            <div style="display:flex; align-items:baseline; gap:6px">
+                <span style="font-size:38px; font-weight:800; color:var(--primary); line-height:1">15.7</span>
+                <span style="font-size:16px; color:var(--primary)">%</span>
+            </div>
+            <div style="display:flex; align-items:stretch; gap:4px; margin-top:10px">
+                <div style="flex:1; text-align:center; padding:5px 2px; background:#f8fafc; border-radius:4px"><div style="font-size:9px; color:var(--text-light)">FY24実績</div><div style="font-size:15px; font-weight:700; color:var(--text-light)">15.9%</div></div>
+                <div style="display:flex; align-items:center; color:var(--text-light); font-size:10px">→</div>
+                <div style="flex:1; text-align:center; padding:5px 2px; background:#e8f0fc; border-radius:4px; border:1px solid var(--primary)"><div style="font-size:9px; color:var(--primary)">FY25実績</div><div style="font-size:15px; font-weight:800; color:var(--primary)">15.7%</div></div>
+                <div style="display:flex; align-items:center; color:var(--text-light); font-size:10px">→</div>
+                <div style="flex:1; text-align:center; padding:5px 2px; background:#f0f4ff; border-radius:4px"><div style="font-size:9px; color:var(--primary)">FY27目標</div><div style="font-size:15px; font-weight:700; color:var(--primary)">20%</div></div>
+            </div>
+            <div class="progress-bar" style="height:8px; margin-top:10px"><div class="progress-fill" style="width:78.5%; background:var(--primary)"></div></div>
+            <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-light); margin-top:3px"><span>78.5%達成</span><span>2ND末目標</span></div>
+            <div style="display:flex; gap:3px; margin-top:8px">
+                <span style="font-size:8px; background:#27ae60; color:#fff; border-radius:3px; padding:2px 5px; white-space:nowrap">1ST ✓</span>
+                <span style="font-size:8px; background:var(--primary); color:#fff; border-radius:3px; padding:2px 6px; white-space:nowrap; font-weight:700">▶ 2ND</span>
+                <span style="font-size:8px; background:#eee; color:#999; border-radius:3px; padding:2px 5px; white-space:nowrap">3RD</span>
+                <span style="font-size:8px; background:#eee; color:#999; border-radius:3px; padding:2px 5px; white-space:nowrap">4TH</span>
+                <span style="font-size:8px; background:#eee; color:#999; border-radius:3px; padding:2px 5px; white-space:nowrap">5TH</span>
+            </div>
+        </div>
+
+        <!-- 参考：簿価自己資本比率 -->
+        <div class="milestone-card" style="border-top-color:#7b2d8b; opacity:0.85">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px">
+                <span style="font-size:10px; font-weight:700; color:#7b2d8b; letter-spacing:.5px">参考</span>
+                <span style="font-size:9px; background:#7b2d8b; color:#fff; border-radius:3px; padding:1px 6px">2ND目標: 5%</span>
+            </div>
+            <div style="font-size:12px; font-weight:700; color:var(--text); margin-bottom:8px">自己資本比率（簿価）</div>
+            <div style="display:flex; align-items:baseline; gap:6px">
+                <span style="font-size:38px; font-weight:800; color:#7b2d8b; line-height:1">2.0</span>
+                <span style="font-size:16px; color:#7b2d8b">%</span>
+            </div>
+            <div style="display:flex; align-items:stretch; gap:4px; margin-top:10px">
+                <div style="flex:1; text-align:center; padding:5px 2px; background:#f8fafc; border-radius:4px"><div style="font-size:9px; color:var(--text-light)">FY24実績</div><div style="font-size:15px; font-weight:700; color:var(--text-light)">3.0%</div></div>
+                <div style="display:flex; align-items:center; color:var(--text-light); font-size:10px">→</div>
+                <div style="flex:1; text-align:center; padding:5px 2px; background:#f5eeff; border-radius:4px; border:1px solid #7b2d8b"><div style="font-size:9px; color:#7b2d8b">FY25実績</div><div style="font-size:15px; font-weight:800; color:#7b2d8b">2.0%</div></div>
+                <div style="display:flex; align-items:center; color:var(--text-light); font-size:10px">→</div>
+                <div style="flex:1; text-align:center; padding:5px 2px; background:#f5eeff; border-radius:4px"><div style="font-size:9px; color:#7b2d8b">FY27目標</div><div style="font-size:15px; font-weight:700; color:#7b2d8b">5%</div></div>
+            </div>
+            <div class="progress-bar" style="height:8px; margin-top:10px"><div class="progress-fill" style="width:40%; background:#7b2d8b"></div></div>
+            <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-light); margin-top:3px"><span>40%達成</span><span>2ND末目標</span></div>
+            <div style="display:flex; gap:3px; margin-top:8px">
+                <span style="font-size:8px; background:#27ae60; color:#fff; border-radius:3px; padding:2px 5px; white-space:nowrap">1ST ✓</span>
+                <span style="font-size:8px; background:var(--primary); color:#fff; border-radius:3px; padding:2px 6px; white-space:nowrap; font-weight:700">▶ 2ND</span>
+                <span style="font-size:8px; background:#eee; color:#999; border-radius:3px; padding:2px 5px; white-space:nowrap">3RD</span>
+                <span style="font-size:8px; background:#eee; color:#999; border-radius:3px; padding:2px 5px; white-space:nowrap">4TH</span>
+                <span style="font-size:8px; background:#eee; color:#999; border-radius:3px; padding:2px 5px; white-space:nowrap">5TH</span>
+            </div>
+            <div style="font-size:10px; color:var(--text-light); margin-top:6px">純資産 1,045万</div>
+        </div>
+
+        <!-- 目標指標②：債務償還年数 -->
+        <div class="milestone-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px">
+                <span style="font-size:10px; font-weight:700; color:var(--text-light); letter-spacing:.5px">目標指標②</span>
+                <span style="font-size:9px; background:var(--accent); color:#fff; border-radius:3px; padding:1px 6px">2ND目標: 35年</span>
+            </div>
+            <div style="font-size:12px; font-weight:700; color:var(--text); margin-bottom:8px">債務償還年数</div>
+            <div style="display:flex; align-items:baseline; gap:6px">
+                <span style="font-size:38px; font-weight:800; color:var(--accent); line-height:1">36.6</span>
+                <span style="font-size:16px; color:var(--accent)">年</span>
+            </div>
+            <div style="display:flex; align-items:stretch; gap:4px; margin-top:10px">
+                <div style="flex:1; text-align:center; padding:5px 2px; background:#f8fafc; border-radius:4px"><div style="font-size:9px; color:var(--text-light)">FY24実績</div><div style="font-size:15px; font-weight:700; color:var(--text-light)">54.6年</div></div>
+                <div style="display:flex; align-items:center; color:var(--text-light); font-size:10px">→</div>
+                <div style="flex:1; text-align:center; padding:5px 2px; background:#fff9ee; border-radius:4px; border:1px solid var(--accent)"><div style="font-size:9px; color:var(--accent)">FY25実績</div><div style="font-size:15px; font-weight:800; color:var(--accent)">36.6年</div></div>
+                <div style="display:flex; align-items:center; color:var(--text-light); font-size:10px">→</div>
+                <div style="flex:1; text-align:center; padding:5px 2px; background:#f0f4ff; border-radius:4px"><div style="font-size:9px; color:var(--primary)">FY26目標</div><div style="font-size:15px; font-weight:700; color:var(--primary)">25年</div></div>
+            </div>
+            <div class="progress-bar" style="height:8px; margin-top:10px"><div class="progress-fill" style="width:95.6%; background:var(--accent)"></div></div>
+            <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-light); margin-top:3px"><span>95.6%達成</span><span>FY27目標</span></div>
+            <div style="display:flex; gap:3px; margin-top:8px">
+                <span style="font-size:8px; background:#27ae60; color:#fff; border-radius:3px; padding:2px 5px; white-space:nowrap">1ST ✓</span>
+                <span style="font-size:8px; background:var(--primary); color:#fff; border-radius:3px; padding:2px 6px; white-space:nowrap; font-weight:700">▶ 2ND</span>
+                <span style="font-size:8px; background:#eee; color:#999; border-radius:3px; padding:2px 5px; white-space:nowrap">3RD</span>
+                <span style="font-size:8px; background:#eee; color:#999; border-radius:3px; padding:2px 5px; white-space:nowrap">4TH</span>
+                <span style="font-size:8px; background:#eee; color:#999; border-radius:3px; padding:2px 5px; white-space:nowrap">5TH</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- サブKPIチップ（各戦略指標の計算元） -->
+    <!-- サブKPI：分子カード（上段）÷ 分母カード（下段） 5列×2行 -->
+    <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:8px 12px; margin-top:16px">
+
+        <!-- ① 空欄（総戸数は分子/分母なし） -->
+        <div style="visibility:hidden"></div>
+
+        <!-- ② 分子：経常利益 -->
+        <div style="background:#f0faf5; border:1px solid var(--success); border-radius:8px; padding:12px 14px;">
+            <div style="font-size:10px; color:var(--success); font-weight:700; margin-bottom:8px">② 分子（経常利益）</div>
+            <div style="display:flex; align-items:stretch; gap:4px">
+                <div style="flex:1; text-align:center; padding:6px 2px; background:#f8fafc; border-radius:4px"><div style="font-size:9px; color:var(--text-light)">FY24実績</div><div style="font-size:16px; font-weight:700; color:var(--text-light)">0.4<span style="font-size:10px">百万</span></div></div>
+                <div style="display:flex; align-items:center; font-size:10px; color:var(--text-light)">→</div>
+                <div style="flex:1; text-align:center; padding:6px 2px; background:#f0faf5; border-radius:4px; border:1px solid var(--success)"><div style="font-size:9px; color:var(--success)">FY25実績</div><div style="font-size:16px; font-weight:800; color:var(--success)">1.3<span style="font-size:10px">百万</span></div></div>
+                <div style="display:flex; align-items:center; font-size:10px; color:var(--text-light)">→</div>
+                <div style="flex:1; text-align:center; padding:6px 2px; background:#f0f4ff; border-radius:4px"><div style="font-size:9px; color:var(--primary)">FY26目標</div><div style="font-size:16px; font-weight:700; color:var(--primary)">2.8<span style="font-size:10px">百万</span></div></div>
+            </div>
+            <div style="font-size:11px; color:var(--success); font-weight:600; margin-top:7px">前期比 +233%</div>
+        </div>
+
+        <!-- ③ 分子：修正自己資本 -->
+        <div style="background:#e8f0fc; border:1px solid var(--primary); border-radius:8px; padding:12px 14px;">
+            <div style="font-size:10px; color:var(--primary); font-weight:700; margin-bottom:8px">③ 分子（修正自己資本）</div>
+            <div style="display:flex; align-items:stretch; gap:4px">
+                <div style="flex:1; text-align:center; padding:6px 2px; background:#f8fafc; border-radius:4px"><div style="font-size:9px; color:var(--text-light)">FY24実績</div><div style="font-size:14px; font-weight:700; color:var(--text-light)">51.2<span style="font-size:10px">百万</span></div></div>
+                <div style="display:flex; align-items:center; font-size:10px; color:var(--text-light)">→</div>
+                <div style="flex:1; text-align:center; padding:6px 2px; background:#e8f0fc; border-radius:4px; border:1px solid var(--primary)"><div style="font-size:9px; color:var(--primary)">FY25実績</div><div style="font-size:14px; font-weight:800; color:var(--primary)">82.2<span style="font-size:10px">百万</span></div></div>
+                <div style="display:flex; align-items:center; font-size:10px; color:var(--text-light)">→</div>
+                <div style="flex:1; text-align:center; padding:6px 2px; background:#f0f4ff; border-radius:4px"><div style="font-size:9px; color:var(--text-light)">FY26目標</div><div style="font-size:14px; color:var(--text-light)">—</div></div>
+            </div>
+            <div style="font-size:11px; color:var(--primary); font-weight:600; margin-top:7px">前期比 +61%　純資産+役員借入+親族借入</div>
+        </div>
+
+        <!-- ④ 分子：純資産（簿価）参考 -->
+        <div style="background:#f5eeff; border:1px solid #7b2d8b; border-radius:8px; padding:12px 14px; opacity:0.85">
+            <div style="font-size:10px; color:#7b2d8b; font-weight:700; margin-bottom:8px">④ 分子（純資産・簿価）参考</div>
+            <div style="display:flex; align-items:stretch; gap:4px">
+                <div style="flex:1; text-align:center; padding:6px 2px; background:#f8fafc; border-radius:4px"><div style="font-size:9px; color:var(--text-light)">FY24実績</div><div style="font-size:15px; font-weight:700; color:var(--text-light)">9.5<span style="font-size:10px">百万</span></div></div>
+                <div style="display:flex; align-items:center; font-size:10px; color:var(--text-light)">→</div>
+                <div style="flex:1; text-align:center; padding:6px 2px; background:#f5eeff; border-radius:4px; border:1px solid #7b2d8b"><div style="font-size:9px; color:#7b2d8b">FY25実績</div><div style="font-size:15px; font-weight:800; color:#7b2d8b">10.5<span style="font-size:10px">百万</span></div></div>
+                <div style="display:flex; align-items:center; font-size:10px; color:var(--text-light)">→</div>
+                <div style="flex:1; text-align:center; padding:6px 2px; background:#f0f4ff; border-radius:4px"><div style="font-size:9px; color:var(--primary)">FY26目標</div><div style="font-size:15px; font-weight:700; color:var(--primary)">22<span style="font-size:10px">百万</span></div></div>
+            </div>
+            <div style="font-size:11px; color:#7b2d8b; font-weight:600; margin-top:7px">前期比 +10%</div>
+        </div>
+
+        <!-- ⑤ 分子：銀行借入金 -->
+        <div style="background:#fff9ee; border:1px solid var(--accent); border-radius:8px; padding:12px 14px;">
+            <div style="font-size:10px; color:var(--accent); font-weight:700; margin-bottom:8px">⑤ 分子（銀行借入金）</div>
+            <div style="display:flex; align-items:stretch; gap:4px">
+                <div style="flex:1; text-align:center; padding:6px 2px; background:#f8fafc; border-radius:4px"><div style="font-size:9px; color:var(--text-light)">FY24実績</div><div style="font-size:14px; font-weight:700; color:var(--text-light)">270<span style="font-size:10px">百万</span></div></div>
+                <div style="display:flex; align-items:center; font-size:10px; color:var(--text-light)">→</div>
+                <div style="flex:1; text-align:center; padding:6px 2px; background:#fff9ee; border-radius:4px; border:1px solid var(--accent)"><div style="font-size:9px; color:var(--accent)">FY25実績</div><div style="font-size:14px; font-weight:800; color:var(--accent)">441<span style="font-size:10px">百万</span></div></div>
+                <div style="display:flex; align-items:center; font-size:10px; color:var(--text-light)">→</div>
+                <div style="flex:1; text-align:center; padding:6px 2px; background:#f0f4ff; border-radius:4px"><div style="font-size:9px; color:var(--primary)">FY26目標</div><div style="font-size:14px; font-weight:700; color:var(--primary)">620<span style="font-size:10px">百万</span></div></div>
+            </div>
+            <div style="font-size:11px; color:var(--accent); font-weight:600; margin-top:7px">前期比 +63%</div>
+        </div>
+
+        <!-- ① 空欄 -->
+        <div style="visibility:hidden"></div>
+
+        <!-- ② 分母：売上高 -->
+        <div style="background:#fff; border:1px solid var(--success); border-radius:8px; padding:12px 14px;">
+            <div style="font-size:10px; color:var(--text-light); font-weight:700; margin-bottom:8px">分母（売上高）</div>
+            <div style="display:flex; align-items:stretch; gap:4px">
+                <div style="flex:1; text-align:center; padding:6px 2px; background:#f8fafc; border-radius:4px"><div style="font-size:9px; color:var(--text-light)">FY24実績</div><div style="font-size:15px; font-weight:700; color:var(--text-light)">13.0<span style="font-size:10px">百万</span></div></div>
+                <div style="display:flex; align-items:center; font-size:10px; color:var(--text-light)">→</div>
+                <div style="flex:1; text-align:center; padding:6px 2px; background:#f0faf5; border-radius:4px; border:1px solid var(--success)"><div style="font-size:9px; color:var(--success)">FY25実績</div><div style="font-size:15px; font-weight:800; color:var(--success)">25.9<span style="font-size:10px">百万</span></div></div>
+                <div style="display:flex; align-items:center; font-size:10px; color:var(--text-light)">→</div>
+                <div style="flex:1; text-align:center; padding:6px 2px; background:#f0f4ff; border-radius:4px"><div style="font-size:9px; color:var(--primary)">FY26目標</div><div style="font-size:15px; font-weight:700; color:var(--primary)">35.0<span style="font-size:10px">百万</span></div></div>
+            </div>
+            <div style="font-size:11px; color:var(--success); font-weight:600; margin-top:7px">前期比 +99%</div>
+        </div>
+
+        <!-- ③ 分母：総資産（修正自己資本比率） -->
+        <div style="background:#fff; border:1px solid var(--primary); border-radius:8px; padding:12px 14px;">
+            <div style="font-size:10px; color:var(--text-light); font-weight:700; margin-bottom:8px">分母（総資産）</div>
+            <div style="display:flex; align-items:stretch; gap:4px">
+                <div style="flex:1; text-align:center; padding:6px 2px; background:#f8fafc; border-radius:4px"><div style="font-size:9px; color:var(--text-light)">FY24実績</div><div style="font-size:14px; font-weight:700; color:var(--text-light)">321<span style="font-size:10px">百万</span></div></div>
+                <div style="display:flex; align-items:center; font-size:10px; color:var(--text-light)">→</div>
+                <div style="flex:1; text-align:center; padding:6px 2px; background:#e8f0fc; border-radius:4px; border:1px solid var(--primary)"><div style="font-size:9px; color:var(--primary)">FY25実績</div><div style="font-size:14px; font-weight:800; color:var(--primary)">524<span style="font-size:10px">百万</span></div></div>
+                <div style="display:flex; align-items:center; font-size:10px; color:var(--text-light)">→</div>
+                <div style="flex:1; text-align:center; padding:6px 2px; background:#f0f4ff; border-radius:4px"><div style="font-size:9px; color:var(--primary)">FY26目標</div><div style="font-size:14px; font-weight:700; color:var(--primary)">720<span style="font-size:10px">百万</span></div></div>
+            </div>
+            <div style="font-size:11px; color:var(--primary); font-weight:600; margin-top:7px">前期比 +63%</div>
+        </div>
+
+        <!-- ④ 分母：総資産（簿価）参考 -->
+        <div style="background:#fff; border:1px solid #7b2d8b; border-radius:8px; padding:12px 14px; opacity:0.85">
+            <div style="font-size:10px; color:var(--text-light); font-weight:700; margin-bottom:8px">分母（総資産）参考</div>
+            <div style="display:flex; align-items:stretch; gap:4px">
+                <div style="flex:1; text-align:center; padding:6px 2px; background:#f8fafc; border-radius:4px"><div style="font-size:9px; color:var(--text-light)">FY24実績</div><div style="font-size:14px; font-weight:700; color:var(--text-light)">321<span style="font-size:10px">百万</span></div></div>
+                <div style="display:flex; align-items:center; font-size:10px; color:var(--text-light)">→</div>
+                <div style="flex:1; text-align:center; padding:6px 2px; background:#f5eeff; border-radius:4px; border:1px solid #7b2d8b"><div style="font-size:9px; color:#7b2d8b">FY25実績</div><div style="font-size:14px; font-weight:800; color:#7b2d8b">524<span style="font-size:10px">百万</span></div></div>
+                <div style="display:flex; align-items:center; font-size:10px; color:var(--text-light)">→</div>
+                <div style="flex:1; text-align:center; padding:6px 2px; background:#f0f4ff; border-radius:4px"><div style="font-size:9px; color:var(--primary)">FY26目標</div><div style="font-size:14px; font-weight:700; color:var(--primary)">720<span style="font-size:10px">百万</span></div></div>
+            </div>
+            <div style="font-size:11px; color:#7b2d8b; font-weight:600; margin-top:7px">前期比 +63%</div>
+        </div>
+
+        <!-- ⑤ 分母：営業CF（債務償還年数） -->
+        <div style="background:#fff; border:1px solid var(--accent); border-radius:8px; padding:12px 14px;">
+            <div style="font-size:10px; color:var(--text-light); font-weight:700; margin-bottom:8px">分母（営業CF）</div>
+            <div style="display:flex; align-items:stretch; gap:4px">
+                <div style="flex:1; text-align:center; padding:6px 2px; background:#f8fafc; border-radius:4px"><div style="font-size:9px; color:var(--text-light)">FY24実績</div><div style="font-size:15px; font-weight:700; color:var(--text-light)">5.7<span style="font-size:10px">百万</span></div></div>
+                <div style="display:flex; align-items:center; font-size:10px; color:var(--text-light)">→</div>
+                <div style="flex:1; text-align:center; padding:6px 2px; background:#fff9ee; border-radius:4px; border:1px solid var(--accent)"><div style="font-size:9px; color:var(--accent)">FY25実績</div><div style="font-size:15px; font-weight:800; color:var(--accent)">12.0<span style="font-size:10px">百万</span></div></div>
+                <div style="display:flex; align-items:center; font-size:10px; color:var(--text-light)">→</div>
+                <div style="flex:1; text-align:center; padding:6px 2px; background:#f0f4ff; border-radius:4px"><div style="font-size:9px; color:var(--primary)">FY26目標</div><div style="font-size:15px; font-weight:700; color:var(--primary)">17.5<span style="font-size:10px">百万</span></div></div>
+            </div>
+            <div style="font-size:11px; color:var(--accent); font-weight:600; margin-top:7px">前期比 +111%</div>
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- ========== 売上高・経常利益率 推移 ========== -->
+<div class="section" id="sec-pl-chart">
+    <div class="section-title">📈 売上高・経常利益率 推移<span class="badge-title">FY22〜FY36 計画含む</span></div>
+    <div class="card">
+        <div class="card-title">💹 売上高・CF・利益 推移（FY22〜FY36）</div>
+        <div class="chart-wrap chart-wrap-md"><canvas id="plChart"></canvas></div>
+    </div>
+</div>
+
+<!-- ========== 総資産・純資産・借入 推移 ========== -->
+<div class="section" id="sec-equity-chart">
+    <div class="section-title">🏦 総資産・純資産 推移<span class="badge-title">FY22〜FY36 計画含む</span></div>
+    <div class="card">
+        <div class="card-title">📊 総資産・純資産・借入・自己資本比率 推移（FY22〜FY36）</div>
+        <div class="chart-wrap chart-wrap-md"><canvas id="equityTrendChart"></canvas></div>
+    </div>
+</div>
+
+</div><!-- /container -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="sands-data.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    if (typeof renderPLChart === 'function') renderPLChart();
+    if (typeof renderEquityTrendChart === 'function') renderEquityTrendChart();
+});
+</script>
+
+<div class="footer">
+    © 合同会社SANDS（代表：須藤朋子）　本資料は内部管理用です。外部への共有・転載・複製を禁じます。<br>
+    Generated by SANDS AI秘書（ベン） ｜ 2026-05-02
+</div>
+
+<!-- hidden_logo_link -->
+<script>
+(function(){
+    var logo = document.querySelector('.header-logo');
+    if (!logo) return;
+    var clicks = 0, timer = null;
+    logo.addEventListener('click', function(e){
+        clicks++;
+        if (clicks === 1) {
+            timer = setTimeout(function(){ clicks = 0; }, 1500);
+        }
+        if (clicks >= 3) {
+            clearTimeout(timer);
+            clicks = 0;
+            location.href = 'private.html';
+        }
+    });
+})();
+</script>
+</body>
+</html>

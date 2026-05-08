@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SANDS データ取込</title>
+    <link rel="stylesheet" href="sands-style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>if(typeof pdfjsLib!=='undefined') pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
+    <style>
+        @keyframes spin { to { transform: rotate(360deg) } }
+        .drop-zone { border:2px dashed var(--border); border-radius:12px; padding:32px 20px; text-align:center; transition:all 0.2s; cursor:pointer; background:#fafbfc }
+        .drop-zone.drag-over { border-color:var(--primary); background:#f0f4ff }
+        .drop-zone h3 { margin:0 0 8px; font-size:15px; color:var(--text-light) }
+        .drop-zone p { margin:0; font-size:12px; color:#aaa }
+
+        .import-result { background:#f0faf5; border:1px solid var(--success-light,#b2dfdb); border-radius:8px; padding:12px 16px; margin-top:12px; font-size:12px }
+        .import-result.error { background:#fff3f3; border-color:#ffcdd2 }
+
+        .step-list { list-style:none; padding:0; margin:0; counter-reset:step }
+        .step-list li { counter-increment:step; padding:8px 0 8px 32px; position:relative; font-size:12px; color:var(--text-light); border-bottom:1px solid var(--border) }
+        .step-list li:last-child { border-bottom:none }
+        .step-list li::before { content:counter(step); position:absolute; left:0; width:22px; height:22px; background:var(--primary); color:#fff; border-radius:50%; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; top:8px }
+
+        .copy-btn { font-size:11px; padding:4px 10px; background:#f0f4ff; border:1px solid var(--border); border-radius:4px; cursor:pointer; color:var(--primary); white-space:nowrap }
+        .copy-btn:hover { background:var(--primary); color:#fff }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="header-brand">
+        <div class="header-logo">S</div>
+        <div class="header-title">
+            <h1>SANDS 財務ダッシュボード</h1>
+            <p>合同会社SANDS ｜ データ取込 ｜ 内部管理資料</p>
+        </div>
+    </div>
+    <div class="header-meta">
+        <strong>データ取込センター</strong>
+        <span id="updateDate">更新日：—</span>
+    </div>
+</div>
+
+<div class="page-nav">
+    <div class="pnav-item">
+        <a href="dashboard.html" class="pnav-link">🏠 ホーム</a>
+    </div>
+    <div class="pnav-item">
+        <a href="financials.html" class="pnav-link">📋 財務・借入 <span class="pnav-arrow">▾</span></a>
+        <div class="pnav-dropdown">
+            <a href="financials.html#sec-bs">📐 財務諸表</a>
+            <a href="financials.html#sec-loan">🏦 借入管理</a>
+            <a href="financials.html#sec-cf">💧 C/F計算書</a>
+            <a href="financials.html#sec-monthly">📅 月次推移（全期間）</a>
+        </div>
+    </div>
+    <div class="pnav-item">
+        <a href="monthly.html?fy=26" class="pnav-link">📅 月次トラッカー</a>
+    </div>
+    <div class="pnav-item">
+        <a href="properties-detail.html" class="pnav-link">🏘️ 物件管理 <span class="pnav-arrow">▾</span></a>
+        <div class="pnav-dropdown">
+            <a href="properties-detail.html#sec-property">📦 物件カード</a>
+            <a href="properties-detail.html#sec-rentroll">📄 レントロール</a>
+            <a href="properties-detail.html#sec-rent">💰 賃料集計</a>
+        </div>
+    </div>
+    <div class="pnav-item">
+        <a href="assets.html" class="pnav-link">📉 資産管理 <span class="pnav-arrow">▾</span></a>
+        <div class="pnav-dropdown">
+            <a href="assets.html#sec-depreciation">📉 減価償却</a>
+            <a href="assets.html#sec-bm">🔧 BM集計</a>
+            <a href="assets.html#sec-lots">📜 筆一覧</a>
+        </div>
+    </div>
+    <div class="pnav-item">
+        <a href="import.html" class="pnav-link active">⬆️ データ取込</a>
+    </div>
+</div>
+
+<div class="nav">
+    <div class="nav-item active" onclick="navScrollTo(event,'sec-ocr')">📄 収支報告書OCR</div>
+    <div class="nav-item" onclick="navScrollTo(event,'sec-csv')">📊 freee CSV</div>
+    <div class="nav-item" onclick="navScrollTo(event,'sec-imported')">📋 取込済みデータ</div>
+</div>
+
+<div class="container">
+
+<!-- ========== セクション1: 収支報告書OCR取込 ========== -->
+<div class="section" id="sec-ocr">
+    <div class="section-title">📄 収支報告書OCR取込</div>
+    <div class="grid-2">
+        <div class="card">
+            <div class="card-title">📄 収支報告書から取込（メイン）</div>
+            <div id="serverStatusBanner" style="margin-bottom:12px;padding:10px 14px;border-radius:8px;font-size:12px;display:flex;align-items:center;gap:8px;background:#f1f5f9;border:1px solid #e2e8f0">
+                <span id="serverStatusDot" style="width:8px;height:8px;border-radius:50%;background:#94a3b8;flex-shrink:0"></span>
+                <span id="serverStatusText" style="color:#64748b">サーバー確認中...</span>
+            </div>
+            <div style="margin-bottom:14px">
+                <button id="processBtn" onclick="processAndLoad()" style="width:100%;padding:14px;background:#1a3d6e;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
+                    <span id="processBtnIcon">📥</span>
+                    <span id="processBtnText">収支報告書をOCR処理して取込</span>
+                </button>
+                <div style="margin-top:6px;font-size:11px;color:#6b7280;text-align:center">
+                    <code>resources/収支報告書/</code> 内のPDFを自動処理します
+                </div>
+            </div>
+            <div id="processProgress" style="display:none;margin-bottom:12px;padding:12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;font-size:12px">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                    <div style="width:16px;height:16px;border:2px solid #3b82f6;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0"></div>
+                    <span style="font-weight:700;color:#1d4ed8">OCR処理中... 2〜3分かかります</span>
+                </div>
+                <div id="processLog" style="font-family:monospace;color:#374151;font-size:10px;white-space:pre-wrap;max-height:80px;overflow-y:auto"></div>
+            </div>
+            <div id="processResult" style="display:none;margin-bottom:12px"></div>
+
+            <!-- PDF個別取込（ドラッグ） -->
+            <div style="border-top:1px solid #e5e7eb;padding-top:12px;margin-top:4px">
+                <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:8px">📄 PDF個別取込（ドラッグ＆ドロップ）</div>
+                <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()" style="padding:14px">
+                    <div style="font-size:22px;margin-bottom:4px">📄</div>
+                    <p style="margin:0;font-size:12px">収支報告書PDFをドラッグ<br>またはクリックして選択</p>
+                </div>
+                <input type="file" id="fileInput" accept=".pdf,.csv" style="display:none" multiple>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">💡 OCR取込ガイド</div>
+            <p style="font-size:12px; color:var(--text-light); margin-bottom:12px">
+                収支報告書PDFから自動でデータを抽出します。<br>
+                サーバーを起動してからボタンを押してください。
+            </p>
+            <ol class="step-list">
+                <li>ターミナルで <code>python3 server.py</code> を実行</li>
+                <li>収支報告書PDFを <code>resources/収支報告書/</code> に保存</li>
+                <li>「収支報告書をOCR処理して取込」ボタンをクリック</li>
+                <li>2〜3分待つと自動で月次データが取込まれる</li>
+                <li>「スニペットをコピー」で sands-data.js に永続保存</li>
+            </ol>
+            <div style="margin-top:12px; padding:10px; background:#f0f4ff; border-radius:6px; font-size:11px">
+                <strong>サーバー起動コマンド</strong><br>
+                <code style="font-size:10px; display:block; margin-top:4px; color:var(--primary)">
+                    cd /Users/sutoumasashi/cc-booster-v1-release<br>
+                    python3 server.py
+                </code>
+                <span style="color:var(--text-light)">→ localhost:7800 でAPIサーバーが起動します</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========== セクション2: freee CSV取込 ========== -->
+<div class="section" id="sec-csv">
+    <div class="section-title">📊 freee CSV取込</div>
+    <div class="grid-2">
+        <div class="card">
+            <div class="card-title">📊 freee CSV から取込</div>
+            <div class="drop-zone" id="csvDropZone" onclick="document.getElementById('csvInput').click()">
+                <div style="font-size:32px;margin-bottom:8px">📊</div>
+                <h3>freee 月次推移CSVをドラッグ</h3>
+                <p>またはクリックして選択（複数可）</p>
+            </div>
+            <input type="file" id="csvInput" accept=".csv" style="display:none" multiple>
+            <div id="importResult" style="display:none"></div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">💡 freee CSV 取込ガイド</div>
+            <p style="font-size:12px; color:var(--text-light); margin-bottom:12px">
+                毎月1回、以下の手順でデータを更新してください。<br>
+                CLIスクリプト（<code>scripts/import-monthly.py</code>）で完全自動化も可能です。
+            </p>
+            <ol class="step-list">
+                <li>freee の「月次推移」→「損益計算書」を開く</li>
+                <li>期間を当期（FY26: 2026年4月〜）に設定</li>
+                <li>「CSV エクスポート」でダウンロード</li>
+                <li>このページにドラッグ＆ドロップ</li>
+                <li>「スニペットをコピー」→ sands-data.js に貼り付けで永続保存</li>
+            </ol>
+            <div style="margin-top:12px; padding:10px; background:#f0f4ff; border-radius:6px; font-size:11px">
+                <strong>CLI自動化</strong><br>
+                <code style="font-size:10px; display:block; margin-top:4px; color:var(--primary)">
+                    cd /Users/sutoumasashi/cc-booster-v1-release<br>
+                    python3 scripts/import-monthly.py
+                </code>
+                <span style="color:var(--text-light)">→ resources/freee/ 内のCSVを全て読んで sands-data.js を自動更新</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========== セクション3: 取込済みデータ管理 ========== -->
+<div class="section" id="sec-imported">
+    <div class="section-title">📋 取込済みデータ管理</div>
+    <div class="card">
+        <div class="card-title">📋 取込済みデータ（localStorage）</div>
+        <div id="importedPreview">
+            <div style="font-size:12px; font-weight:700; margin-bottom:8px">取込済みデータ一覧</div>
+            <div id="importedList" style="font-size:11px; color:var(--text-light)">データなし</div>
+            <div style="margin-top:10px; display:flex; gap:8px">
+                <button class="copy-btn" onclick="copyJSSnippet()">📋 sands-data.js 用スニペットをコピー</button>
+                <button class="copy-btn" style="background:#fff3f3; color:var(--danger)" onclick="clearImported()">🗑 取込データを削除</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div><!-- /container -->
+
+<!-- ========== PDF取込モーダル ========== -->
+<div id="pdfModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1000;overflow:auto">
+    <div style="background:#fff;max-width:960px;margin:40px auto;border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
+        <!-- ヘッダー -->
+        <div style="background:#1a3d6e;color:#fff;padding:16px 20px;display:flex;align-items:center;justify-content:space-between">
+            <div>
+                <div style="font-size:16px;font-weight:700">📄 収支報告書 PDF 取込</div>
+                <div style="font-size:11px;opacity:0.8;margin-top:2px" id="pdfFileName">—</div>
+            </div>
+            <button onclick="closePdfModal()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;border-radius:6px;padding:6px 14px;cursor:pointer;font-size:13px">✕ 閉じる</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;height:580px">
+
+            <!-- 左：PDFプレビュー（キャンバス描画） -->
+            <div style="border-right:1px solid #e5e7eb;display:flex;flex-direction:column">
+                <div style="padding:10px 16px;background:#f8fafc;border-bottom:1px solid #e5e7eb;font-size:12px;font-weight:700;color:#374151;display:flex;align-items:center;justify-content:space-between">
+                    <span>📄 PDFプレビュー</span>
+                    <div id="pdfPageNav" style="display:none;font-size:11px;font-weight:400;display:flex;align-items:center;gap:6px">
+                        <button onclick="navigatePdfPage(-1)" id="pdfPrevBtn" style="padding:2px 8px;border:1px solid #d1d5db;border-radius:4px;background:#fff;cursor:pointer">◀</button>
+                        <span id="pdfPageInfo" style="color:#6b7280"></span>
+                        <button onclick="navigatePdfPage(1)"  id="pdfNextBtn" style="padding:2px 8px;border:1px solid #d1d5db;border-radius:4px;background:#fff;cursor:pointer">▶</button>
+                    </div>
+                </div>
+                <div id="pdfTextPreview" style="flex:1;overflow-y:auto;background:#f1f3f5;display:flex;align-items:flex-start;justify-content:center;padding:8px">
+                    <span style="color:#9ca3af;align-self:center;font-size:13px">PDFをドラッグ / クリックで選択</span>
+                </div>
+            </div>
+
+            <!-- 右：入力フォーム -->
+            <div style="display:flex;flex-direction:column">
+                <!-- 管理会社セレクター -->
+                <div style="padding:8px 14px;background:#f8fafc;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                    <span style="font-size:11px;font-weight:700;color:#374151;white-space:nowrap">🏢 管理会社：</span>
+                    <div style="display:flex;gap:4px;flex-wrap:wrap" id="pdfFormatBtns">
+                        <button onclick="selectPdfFormat(0)" style="padding:3px 10px;border-radius:12px;border:1.5px solid #1a3d6e;background:#1a3d6e;color:#fff;font-size:11px;cursor:pointer;font-weight:700">自動</button>
+                        <button onclick="selectPdfFormat(1)" style="padding:3px 10px;border-radius:12px;border:1.5px solid #d1d5db;background:#fff;color:#374151;font-size:11px;cursor:pointer">ブリックス</button>
+                        <button onclick="selectPdfFormat(2)" style="padding:3px 10px;border-radius:12px;border:1.5px solid #d1d5db;background:#fff;color:#374151;font-size:11px;cursor:pointer">スターツ</button>
+                        <button onclick="selectPdfFormat(3)" style="padding:3px 10px;border-radius:12px;border:1.5px solid #d1d5db;background:#fff;color:#374151;font-size:11px;cursor:pointer">レジデンシャル</button>
+                    </div>
+                    <span id="pdfFormatHint" style="font-size:10px;color:#6b7280">PDF読込後に自動判定</span>
+                </div>
+                <div style="flex:1;overflow-y:auto;padding:14px 16px">
+
+                    <!-- ① 自動抽出結果パネル -->
+                    <div id="pdfAutoExtracted" style="display:none;margin-bottom:14px;padding:10px 12px;background:#f0faf5;border:1.5px solid #6ee7b7;border-radius:8px;font-size:12px;line-height:1.8"></div>
+
+                    <!-- ② 対象月 -->
+                    <div style="margin-bottom:12px">
+                        <label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:4px">📅 対象月 <span style="color:#e74c3c">*</span></label>
+                        <input type="month" id="pdfMonth" style="width:100%;padding:7px 10px;border:1.5px solid #d1d5db;border-radius:6px;font-size:13px">
+                    </div>
+
+                    <!-- ③ 賃料収入合計 -->
+                    <div style="margin-bottom:12px">
+                        <label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:3px">
+                            💰 賃料収入合計（全物件）<span style="color:#e74c3c">*</span>
+                        </label>
+                        <div style="display:flex;align-items:center;gap:6px">
+                            <input type="number" id="pdfRevenue" placeholder="例：3069631" style="flex:1;padding:7px 10px;border:1.5px solid #d1d5db;border-radius:6px;font-size:13px">
+                            <span style="font-size:11px;color:#6b7280;white-space:nowrap">円</span>
+                        </div>
+                        <div id="pdfRevenueHint" style="font-size:10px;color:#0369a1;margin-top:3px"></div>
+                    </div>
+
+                    <!-- ④ 振込金額 -->
+                    <div style="margin-bottom:12px">
+                        <label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:3px">
+                            🏦 振込金額（管理費控除後）
+                        </label>
+                        <div style="display:flex;align-items:center;gap:6px">
+                            <input type="number" id="pdfTransfer" placeholder="例：2800000" style="flex:1;padding:7px 10px;border:1.5px solid #d1d5db;border-radius:6px;font-size:13px">
+                            <span style="font-size:11px;color:#6b7280;white-space:nowrap">円</span>
+                        </div>
+                        <div id="pdfTransferHint" style="font-size:10px;color:#0369a1;margin-top:3px"></div>
+                    </div>
+
+                    <!-- ⑤ 経常利益（任意） -->
+                    <div style="margin-bottom:12px">
+                        <label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:3px">📊 経常利益 <span style="font-weight:400;color:#6b7280;font-size:10px">（freee確認後に入力。報告書には含まれません）</span></label>
+                        <div style="display:flex;align-items:center;gap:6px">
+                            <input type="number" id="pdfOrdinary" placeholder="任意" style="flex:1;padding:7px 10px;border:1.5px solid #d1d5db;border-radius:6px;font-size:13px">
+                            <span style="font-size:11px;color:#6b7280;white-space:nowrap">円</span>
+                        </div>
+                    </div>
+
+                    <!-- ⑥ 現預金（任意） -->
+                    <div style="margin-bottom:12px">
+                        <label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:3px">🏧 現預金残高 <span style="font-weight:400;color:#6b7280;font-size:10px">（任意）</span></label>
+                        <div style="display:flex;align-items:center;gap:6px">
+                            <input type="number" id="pdfCash" placeholder="任意" style="flex:1;padding:7px 10px;border:1.5px solid #d1d5db;border-radius:6px;font-size:13px">
+                            <span style="font-size:11px;color:#6b7280;white-space:nowrap">円</span>
+                        </div>
+                    </div>
+
+                    <!-- 数値候補（折りたたみ） -->
+                    <div id="pdfCandidates" style="display:none;margin-bottom:12px;padding:8px 10px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px">
+                        <div style="font-size:11px;font-weight:700;color:#0369a1;margin-bottom:6px">🔍 テキストから検出した数値候補（クリックで入力）</div>
+                        <div id="pdfCandidateList" style="font-size:11px;color:#374151"></div>
+                    </div>
+
+                    <button onclick="importPdfData()" style="width:100%;padding:11px;background:#1a3d6e;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer">
+                        ✅ この内容でインポート
+                    </button>
+                    <div id="pdfImportResult" style="display:none;margin-top:10px;padding:10px;border-radius:6px;font-size:12px"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="footer">
+    © 合同会社SANDS（代表：須藤朋子）　本資料は内部管理用です。外部への共有・転載・複製を禁じます。<br>
+    Generated by SANDS AI秘書（ベン） ｜ データ取込
+</div>
+
+<script src="sands-data.js"></script>
+<script src="data/monthly_reports_data.js" onerror="console.log('monthly_reports_data.js not found - run extract_reports.py first')"></script>
+<script>
+// =============================================
+// 定数・状態
+// =============================================
+const STORAGE_KEY = 'sands_monthly_imported';
+const API_BASE = location.protocol === 'file:' ? 'http://localhost:7800' : '';
+let _serverAvailable = false;
+
+// =============================================
+// ナビゲーション
+// =============================================
+function navScrollTo(e, id) {
+    e.preventDefault();
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    e.currentTarget.classList.add('active');
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// =============================================
+// サーバー状態確認
+// =============================================
+async function checkServer() {
+    try {
+        const r = await fetch(API_BASE + '/api/status', { method: 'GET', signal: AbortSignal.timeout(2000) });
+        _serverAvailable = r.ok;
+    } catch { _serverAvailable = false; }
+    updateServerBanner();
+}
+
+function updateServerBanner() {
+    const dot  = document.getElementById('serverStatusDot');
+    const text = document.getElementById('serverStatusText');
+    if (!dot || !text) return;
+    if (_serverAvailable) {
+        dot.style.background  = '#22c55e';
+        text.style.color      = '#166534';
+        text.innerHTML = '✅ <b>サーバー起動中</b> — ボタンを押すとOCR処理します（2〜3分）';
+    } else {
+        dot.style.background  = '#ef4444';
+        text.style.color      = '#991b1b';
+        text.innerHTML = '⚠️ <b>サーバー未起動</b> — ターミナルで <code>python3 server.py</code> を実行してください';
+    }
+}
+
+// =============================================
+// 収支報告書 OCR処理 → 取込
+// =============================================
+async function processAndLoad() {
+    // キャッシュ（window.SANDS_MONTHLY_JSON）があればそのまま使う
+    if (!_serverAvailable && window.SANDS_MONTHLY_JSON) {
+        applyReportJson(window.SANDS_MONTHLY_JSON, 'キャッシュ');
+        return;
+    }
+    if (!_serverAvailable) {
+        showProcessResult('error', '❌ サーバー未起動。<code>python3 server.py</code> を実行してページを再度開いてください。');
+        return;
+    }
+
+    // UI: 処理中表示
+    const btn      = document.getElementById('processBtn');
+    const btnText  = document.getElementById('processBtnText');
+    const btnIcon  = document.getElementById('processBtnIcon');
+    const progress = document.getElementById('processProgress');
+    const log      = document.getElementById('processLog');
+    btn.disabled  = true;
+    btn.style.opacity = '0.6';
+    btnIcon.textContent = '⏳';
+    btnText.textContent = 'OCR処理中... (2〜3分)';
+    progress.style.display = 'block';
+    document.getElementById('processResult').style.display = 'none';
+    log.textContent = 'Vision OCRでPDFを解析しています...\n';
+
+    try {
+        const r    = await fetch(API_BASE + '/api/process-reports', { signal: AbortSignal.timeout(480000) });
+        const json = await r.json();
+
+        if (!json.success) throw new Error(json.error || '処理失敗');
+
+        // ログ表示
+        if (json.stdout) log.textContent += json.stdout;
+        log.scrollTop = log.scrollHeight;
+
+        // window.SANDS_MONTHLY_JSON を更新（再読み込みなしで反映）
+        window.SANDS_MONTHLY_JSON = json;
+        applyReportJson(json, 'OCR');
+
+    } catch(e) {
+        showProcessResult('error', `❌ ${e.message}`);
+    } finally {
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btnIcon.textContent = '📥';
+        btnText.textContent = '収支報告書をOCR処理して取込';
+        progress.style.display = 'none';
+    }
+}
+
+function applyReportJson(json, source) {
+    const reports = json.reports || [];
+    const byMonth = {};
+    reports.forEach(r => {
+        if (!r.month || !r.revenue) return;
+        if (!byMonth[r.month]) byMonth[r.month] = { revenue: 0, transfer: 0 };
+        byMonth[r.month].revenue  += r.revenue  || 0;
+        byMonth[r.month].transfer += r.transfer || 0;
+    });
+    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    let count = 0;
+    Object.entries(byMonth).forEach(([month, d]) => {
+        stored[month] = { ...(stored[month]||{}), month, ...d, source: 'ocr' };
+        count++;
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
+    showProcessResult('ok', `✅ ${count}ヶ月分を取込しました（${source} ／ 生成日: ${json.generated}）<br><span style="font-size:10px">${Object.keys(byMonth).join(', ')}</span>`);
+    renderImportedPreview();
+}
+
+function showProcessResult(type, html) {
+    const el = document.getElementById('processResult');
+    el.style.display = 'block';
+    el.style.cssText = `display:block;padding:10px 12px;border-radius:8px;font-size:12px;margin-bottom:8px;${type==='ok'?'background:#f0faf5;border:1px solid #6ee7b7;color:#065f46':'background:#fef2f2;border:1px solid #fca5a5;color:#991b1b'}`;
+    el.innerHTML = html;
+}
+
+// 後方互換（旧ボタンから呼ばれる場合）
+async function loadFromJson() {
+    const statusEl = document.getElementById('jsonLoadStatus');
+    if (statusEl) { statusEl.textContent = '読込中...'; statusEl.style.color='#6b7280'; }
+    try {
+        let json = window.SANDS_MONTHLY_JSON || null;
+        if (!json) {
+            const resp = await fetch('data/monthly_reports.json?' + Date.now());
+            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+            json = await resp.json();
+        }
+        const reports = json.reports || [];
+        if (!reports.length) { if (statusEl) statusEl.textContent = 'データなし'; return; }
+
+        // 月ごとに集計（複数PDFの同月データを合算）
+        const byMonth = {};
+        reports.forEach(r => {
+            if (!r.month || !r.revenue) return;
+            if (!byMonth[r.month]) byMonth[r.month] = { revenue: 0, transfer: 0, files: [] };
+            byMonth[r.month].revenue  += r.revenue  || 0;
+            byMonth[r.month].transfer += r.transfer || 0;
+            byMonth[r.month].files.push(r.file);
+        });
+
+        const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+        let count = 0;
+        Object.entries(byMonth).forEach(([month, d]) => {
+            stored[month] = {
+                ...( stored[month] || {} ),
+                month,
+                revenue:  d.revenue,
+                transfer: d.transfer,
+                source: 'json',
+            };
+            count++;
+        });
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
+        if (statusEl) { statusEl.textContent = `✅ ${count}ヶ月分を取込（生成日: ${json.generated}）`; statusEl.style.color = '#27ae60'; }
+        showImportResult('ok', `✅ JSONから${count}ヶ月分を取込しました`);
+        renderImportedPreview();
+    } catch(e) {
+        if (statusEl) { statusEl.textContent = `❌ ${e.message}`; statusEl.style.color = '#e74c3c'; }
+        showImportResult('error', `❌ 読込失敗: ${e.message}`);
+    }
+}
+
+// =============================================
+// PDF 取込（iframe ネイティブ表示方式）
+// =============================================
+let _pdfBlobUrl = null;
+
+async function handlePDFFile(file) {
+    // モーダルリセット
+    document.getElementById('pdfFileName').textContent        = file.name;
+    document.getElementById('pdfCandidates').style.display   = 'none';
+    document.getElementById('pdfAutoExtracted').style.display = 'none';
+    document.getElementById('pdfImportResult').style.display  = 'none';
+    document.getElementById('pdfPageNav').style.display       = 'none';
+    _pdfLastText = '';
+    ['pdfRevenue','pdfTransfer','pdfOrdinary','pdfCash'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.value = '';
+    });
+
+    // 既存BlobURLを解放
+    if (_pdfBlobUrl) { URL.revokeObjectURL(_pdfBlobUrl); _pdfBlobUrl = null; }
+
+    // Blob URLでiframe表示（ブラウザネイティブPDFビューア）
+    _pdfBlobUrl = URL.createObjectURL(file);
+    const container = document.getElementById('pdfTextPreview');
+    container.style.padding = '0';
+    container.innerHTML = `<iframe src="${_pdfBlobUrl}" style="width:100%;height:100%;border:none;display:block"></iframe>`;
+
+    document.getElementById('pdfModal').style.display = 'block';
+
+    // ===== ファイル名から自動判定 =====
+    const fname = file.name;
+
+    // 管理会社
+    let detectedFmt = 0;
+    if      (/Bruno|Ovest|ブリックス|月次報告書/i.test(fname))          detectedFmt = 1;
+    else if (/Terzo|スターツ|振込明細/i.test(fname))                    detectedFmt = 2;
+    else if (/Candai|Altana|レジデンシャル|収支報告/i.test(fname))      detectedFmt = 3;
+    selectPdfFormat(detectedFmt);
+
+    // 月（ファイル名から）
+    const monthRe = [/(\d{4})[.\-\/](\d{1,2})/, /(\d{2})[.\-](\d{1,2})月/];
+    for (const re of monthRe) {
+        const m = fname.match(re);
+        if (m) {
+            let y = parseInt(m[1]), mo = parseInt(m[2]);
+            if (y < 100) y += 2000;
+            if (y >= 2020 && y <= 2040 && mo >= 1 && mo <= 12) {
+                document.getElementById('pdfMonth').value = `${y}-${String(mo).padStart(2,'0')}`;
+                break;
+            }
+        }
+    }
+
+    updateFormHints();
+}
+
+// navigatePdfPage はiframeではページ内スクロールで対応済み（不要だが互換のため残す）
+function navigatePdfPage() {}
+
+// フォーマットに応じてフォームのラベルヒントを更新
+const FORMAT_HINTS = [
+    { rev: '収入合計（全物件）',   revTip: 'PDFの各物件の収入合計を合算して入力', tr: '振込合計（全物件）' },
+    { rev: '収入計の合計（Bruno＋Ovest）', revTip: 'Bruno の収入計 ＋ Ovest の収入計', tr: '御振込金額の合計（Bruno＋Ovest）' },
+    { rev: '賃料・管理費の計欄合計', revTip: '合計行の「計」列の数値（608,000 など）', tr: '振込金（賃料・管理費＋支払分－相殺分）' },
+    { rev: '収入合計', revTip: '当月収支の「収入合計」の数値', tr: 'お振込金合計（マイナスの場合もそのまま入力）' },
+];
+function updateFormHints() {
+    const h = FORMAT_HINTS[_pdfFormat] || FORMAT_HINTS[0];
+    const revHint = document.getElementById('pdfRevenueHint');
+    const trHint  = document.getElementById('pdfTransferHint');
+    if (revHint) revHint.textContent = '← ' + h.revTip;
+    if (trHint)  trHint.textContent  = '← ' + h.tr;
+}
+
+// ダミー（後方互換）
+function detectPdfCandidates(text) {}
+function runPdfExtraction(text) {}
+
+// ---- PDF フォーマット定義（管理会社別）----
+const PDF_FORMATS = [
+    {
+        label: '自動',   company: '自動判定',
+        hint: 'PDF読込後に管理会社を自動判定します',
+        detect: null,
+    },
+    {
+        label: 'ブリックス', company: 'ブリックス株式会社',
+        hint: 'Bruno・Ovest ｜ 送金のご案内 ｜ 複数物件を自動合算',
+        detect: text => /ブリックス|送金のご案内/.test(text),
+    },
+    {
+        label: 'スターツ', company: 'スターツ',
+        hint: 'Terzo ｜ 振込明細 ｜ 画像PDFのため手動入力',
+        detect: text => /振込明細|スターツ|家賃管理手数料/.test(text),
+    },
+    {
+        label: 'レジデンシャル', company: '㈱レジデンシャルリース',
+        hint: 'Candai・Altana ｜ 月次収支報告書 ｜ 収入合計・お振込金合計を自動抽出',
+        detect: text => /月次収支報告書|レジデンシャル|お振込金合計/.test(text),
+    },
+];
+
+let _pdfFormat = 0;
+let _pdfLastText = '';
+
+function selectPdfFormat(idx) {
+    _pdfFormat = idx;
+    document.querySelectorAll('#pdfFormatBtns button').forEach((btn, i) => {
+        const active = i === idx;
+        btn.style.background  = active ? '#1a3d6e' : '#fff';
+        btn.style.color       = active ? '#fff'    : '#374151';
+        btn.style.borderColor = active ? '#1a3d6e' : '#d1d5db';
+        btn.style.fontWeight  = active ? '700'     : '400';
+    });
+    document.getElementById('pdfFormatHint').textContent = PDF_FORMATS[idx].hint;
+    if (_pdfBlobUrl) updateFormHints();
+}
+
+// フォーマット自動判定
+function autoDetectFormat(text) {
+    for (let i = 1; i < PDF_FORMATS.length; i++) {
+        if (PDF_FORMATS[i].detect && PDF_FORMATS[i].detect(text)) return i;
+    }
+    return 0;
+}
+
+// フォーマット別の数値抽出
+function extractPdfValues(text, fmtIdx) {
+    const res = { revenue: null, transfer: null, month: null, properties: [], note: '' };
+    // 月の抽出（共通）
+    const mM = text.match(/(\d{4})年\s*(\d{1,2})月/);
+    if (mM) res.month = `${mM[1]}-${mM[2].padStart(2, '0')}`;
+
+    const toInt = s => parseInt((s||'').replace(/[,，]/g, ''));
+    const findAll = (re) => [...text.matchAll(re)].map(m => toInt(m[1]));
+    const findOne = (re) => { const m = text.match(re); return m ? toInt(m[1]) : null; };
+
+    if (fmtIdx === 1) {
+        // ブリックス: 収入計を全物件分合算、御振込金額も合算
+        const incomes   = findAll(/収入計\s+([\d,]+)/g);
+        const transfers = findAll(/御振込金額\s+([\d,]+)/g);
+        if (incomes.length)   res.revenue  = incomes.reduce((a,b)=>a+b,0);
+        if (transfers.length) res.transfer = transfers.reduce((a,b)=>a+b,0);
+        // 物件名
+        res.properties = [...text.matchAll(/物件名\s+(Casa\S+)/g)].map(m => m[1]);
+        if (!res.properties.length) res.properties = ['CasaBruno','CasaOvest'];
+        res.note = res.properties.join('＋');
+
+    } else if (fmtIdx === 2) {
+        // スターツ: 画像PDF。合計行 "合 計 568,000 40,000 608,000" 、振込金
+        const totM = text.match(/合\s*計\s+([\d,]+)\s+([\d,]+)\s+([\d,]+)/);
+        if (totM) res.revenue = toInt(totM[3]);
+        const trM  = text.match(/振\s*込\s*金[^(\d]*([\d,]+)/);
+        if (trM)  res.transfer = toInt(trM[1]);
+        res.properties = ['CasaTerzo'];
+        res.note = 'Terzo（振込明細）';
+
+    } else if (fmtIdx === 3) {
+        // レジデンシャルリース: 収入合計、お振込金合計
+        res.revenue  = findOne(/収入合計\s+([\d,]+)/);
+        const trRaw  = text.match(/お振込金合計\s+([-\d,]+)/);
+        if (trRaw) res.transfer = toInt(trRaw[1]);
+        const propM  = text.match(/Casa\s*(?:Candai|Altana)/);
+        if (propM) res.properties = [propM[0].replace(/\s/, '')];
+        res.note = res.properties.join('＋') || 'レジデンシャル';
+
+    } else {
+        // 汎用
+        res.revenue  = findOne(/収入計\s+([\d,]+)/) || findOne(/収入合計\s+([\d,]+)/);
+        res.transfer = findOne(/御振込金額\s+([\d,]+)/) || findOne(/お振込金合計\s+([\d,]+)/);
+    }
+    return res;
+}
+
+function fillPdfField(hint, value) {
+    const map = {
+        revenue:  'pdfRevenue',
+        transfer: 'pdfTransfer',
+        ordinary: 'pdfOrdinary',
+        cash:     'pdfCash',
+    };
+    const target = hint && map[hint] ? map[hint] : 'pdfRevenue';
+    document.getElementById(target).value = value;
+}
+
+function importPdfData() {
+    const month = document.getElementById('pdfMonth').value;
+    if (!month) { alert('対象月を入力してください'); return; }
+
+    const revenue  = parseInt(document.getElementById('pdfRevenue').value)  || 0;
+    const transfer = parseInt(document.getElementById('pdfTransfer').value) || null;
+    const ordinary = parseInt(document.getElementById('pdfOrdinary').value) || 0;
+    const cash     = parseInt(document.getElementById('pdfCash').value)     || null;
+
+    if (!revenue) { alert('賃料収入合計は必須です'); return; }
+
+    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    // 既存データがあればマージ（同月の他物件データを上書きしない）
+    const prev = stored[month] || {};
+    stored[month] = {
+        ...prev,
+        month,
+        revenue:        revenue,
+        ordinaryProfit: ordinary || prev.ordinaryProfit || 0,
+        ...(transfer !== null ? { transfer } : {}),
+        ...(cash ? { cash: Math.round(cash / 10000) } : {}),
+        source: 'pdf',
+        company: PDF_FORMATS[_pdfFormat]?.company || '不明',
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
+
+    const res = document.getElementById('pdfImportResult');
+    res.style.display = 'block';
+    res.style.cssText += ';padding:10px;background:#f0faf5;border-radius:6px;font-size:12px;color:#065f46;border:1px solid #6ee7b7;margin-top:8px';
+    res.innerHTML = `✅ ${month} 取込完了<br>収入 ${Math.round(revenue/10000)}万円 ／ 振込 ${transfer ? Math.round(transfer/10000)+'万円' : '—'} ／ 管理会社：${PDF_FORMATS[_pdfFormat]?.company||'—'}`;
+
+    setTimeout(() => {
+        closePdfModal();
+        renderImportedPreview();
+        showImportResult('ok', `✅ PDF取込完了：${month}（${Math.round(revenue/10000)}万円）`);
+    }, 1800);
+}
+
+function closePdfModal() {
+    document.getElementById('pdfModal').style.display = 'none';
+}
+
+// =============================================
+// CSV インポート
+// =============================================
+function setupDropZone() {
+    // OCR用ドロップゾーン（PDF/CSV両対応）
+    const zone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    if (zone) {
+        zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+        zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+        zone.addEventListener('drop', e => {
+            e.preventDefault();
+            zone.classList.remove('drag-over');
+            Array.from(e.dataTransfer.files).forEach(dispatchFile);
+        });
+    }
+    if (fileInput) {
+        fileInput.addEventListener('change', e => { Array.from(e.target.files).forEach(dispatchFile); e.target.value=''; });
+    }
+
+    // CSV専用ドロップゾーン
+    const csvZone = document.getElementById('csvDropZone');
+    const csvInput = document.getElementById('csvInput');
+    if (csvZone) {
+        csvZone.addEventListener('dragover', e => { e.preventDefault(); csvZone.classList.add('drag-over'); });
+        csvZone.addEventListener('dragleave', () => csvZone.classList.remove('drag-over'));
+        csvZone.addEventListener('drop', e => {
+            e.preventDefault();
+            csvZone.classList.remove('drag-over');
+            Array.from(e.dataTransfer.files).forEach(handleCSVFile);
+        });
+    }
+    if (csvInput) {
+        csvInput.addEventListener('change', e => { Array.from(e.target.files).forEach(handleCSVFile); e.target.value=''; });
+    }
+}
+
+function dispatchFile(file) {
+    if (file.name.toLowerCase().endsWith('.pdf')) {
+        handlePDFFile(file);
+    } else {
+        handleCSVFile(file);
+    }
+}
+
+function handleCSVFile(file) {
+    const reader = new FileReader();
+    reader.onload = e => {
+        let text;
+        try {
+            // Try Shift-JIS first (freee default)
+            text = new TextDecoder('shift-jis').decode(e.target.result);
+            if (text.includes('â')) throw new Error('Not shift-jis');
+        } catch {
+            text = new TextDecoder('utf-8').decode(e.target.result);
+        }
+
+        const parsed = parseFreeeCSV(text);
+        if (!parsed || Object.keys(parsed).length === 0) {
+            showImportResult('error', `❌ パースできませんでした: ${file.name}<br>freee の「月次推移：損益計算書」CSVをご確認ください。`);
+            return;
+        }
+
+        // Merge into localStorage
+        const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+        let newCount = 0;
+        Object.entries(parsed).forEach(([month, data]) => {
+            if (!stored[month] || data.revenue !== 0) {
+                stored[month] = { ...stored[month], ...data, month, source: 'csv' };
+                newCount++;
+            }
+        });
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
+
+        showImportResult('ok', `✅ ${file.name}<br>${newCount}ヶ月分のデータを取込みました。`);
+        renderImportedPreview();
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+function parseFreeeCSV(text) {
+    // Split into rows (handle \r\n and \n)
+    const lines = text.replace(/\r\n/g, '\n').split('\n').map(line => {
+        const cells = [];
+        let cur = '', inQ = false;
+        for (const ch of line) {
+            if (ch === '"') { inQ = !inQ; }
+            else if (ch === ',' && !inQ) { cells.push(cur); cur = ''; }
+            else { cur += ch; }
+        }
+        cells.push(cur);
+        return cells.map(c => c.trim().replace(/^"(.*)"$/, '$1'));
+    });
+
+    // Find header row (contains YYYY-MM)
+    let headerIdx = -1, monthCols = [];
+    for (let i = 0; i < lines.length; i++) {
+        const mc = lines[i].reduce((a, c, j) => { if (/^\d{4}-\d{2}$/.test(c)) a.push({j, m: c}); return a; }, []);
+        if (mc.length >= 2) { headerIdx = i; monthCols = mc; break; }
+    }
+    if (headerIdx < 0) return null;
+
+    // Find key rows
+    let revRow = null, ordRow = null, deprRow = null, intRow = null;
+    for (let i = headerIdx + 1; i < lines.length; i++) {
+        const label = lines[i].slice(0, 6).join('').replace(/"/g, '');
+        if (/売上総損益金額|売上高.*計/.test(label) && !revRow) revRow = lines[i];
+        else if (/経常損益金額/.test(label) && !ordRow) ordRow = lines[i];
+        else if (/^.{0,6}減価償却費/.test(label) && !deprRow) deprRow = lines[i];
+        else if (/^.{0,6}支払利息/.test(label) && !intRow) intRow = lines[i];
+    }
+    if (!revRow && !ordRow) return null;
+
+    const getVal = (row, j) => row && j < row.length ? parseInt(row[j].replace(/,/g, '') || '0') || 0 : 0;
+
+    const result = {};
+    for (const {j, m} of monthCols) {
+        result[m] = {
+            revenue: getVal(revRow, j),
+            ordinaryProfit: getVal(ordRow, j),
+            depreciation: getVal(deprRow, j),
+            interest: getVal(intRow, j),
+        };
+    }
+    return result;
+}
+
+function showImportResult(type, html) {
+    const el = document.getElementById('importResult');
+    el.style.display = 'block';
+    el.className = `import-result ${type === 'error' ? 'error' : ''}`;
+    el.innerHTML = html;
+    setTimeout(() => { el.style.display = 'none'; }, 5000);
+}
+
+// =============================================
+// 取込済みデータ管理
+// =============================================
+function renderImportedPreview() {
+    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    const months = Object.keys(stored).sort();
+    const list = document.getElementById('importedList');
+    if (months.length === 0) {
+        list.textContent = 'データなし';
+        return;
+    }
+    list.innerHTML = `<span style="font-weight:700;color:var(--primary)">${months.length}ヶ月分</span>: ${months[0]} 〜 ${months[months.length - 1]}<br>` +
+        months.map(m => {
+            const d = stored[m];
+            return `<span style="display:inline-block;margin:2px 4px;padding:2px 8px;background:#f0f4ff;border-radius:4px;font-size:10px">${m} (${d.source||'?'})</span>`;
+        }).join('');
+}
+
+function copyJSSnippet() {
+    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    const months = Object.keys(stored).sort();
+    const lines = months.map(m => {
+        const d = stored[m];
+        return `        { month: '${m}', revenue: ${d.revenue||0}, depreciation: ${d.depreciation||0}, interest: ${d.interest||0}, opProfit: 0, ordinaryProfit: ${d.ordinaryProfit||0}, netIncome: 0 },`;
+    });
+    const snippet = `// ---- FY26 取込データ（import-monthly.py または 月次トラッカーより）----\n${lines.join('\n')}`;
+    navigator.clipboard.writeText(snippet).then(() => {
+        showImportResult('ok', '✅ スニペットをクリップボードにコピーしました。sands-data.js の plMonthly 配列に追加してください。');
+    });
+}
+
+function clearImported() {
+    if (!confirm('取込データを削除します。よろしいですか？')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    renderImportedPreview();
+}
+
+// =============================================
+// 初期化
+// =============================================
+window.addEventListener('load', () => {
+    setupDropZone();
+    checkServer();
+    renderImportedPreview();
+});
+</script>
+</body>
+</html>
