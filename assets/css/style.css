@@ -669,9 +669,11 @@ body { cursor: pointer; } /* iOS Safari click fix */
   user-select: none;
 }
 .footer-tagline {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
   font-size: 0.72rem;
-  color: rgba(255,255,255,0.3);
-  letter-spacing: 0.15em;
+  color: rgba(245,243,238,0.5);
+  letter-spacing: 0.12em;
 }
 
 .footer-copy {
