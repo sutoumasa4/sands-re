@@ -44,10 +44,10 @@ const SANDS = {
     // 単位: 百万円
     plHistory: [
         // FY22-25: freee実績。revenue=不動産賃貸収入+更新手数料、operating=営業利益、ordinary=経常利益、netIncome=当期純利益（freee確定）
-        { year: 'FY22', period: '第1期', revenue: 3.33,  operating: 0.54, ordinary: 0.28, netIncome: 0.15, depreciation: 1.62, interest: 0.63, units: 8,  realCF: 1.77,  fcf: -1.60, ordinaryRate: 8.4 },
-        { year: 'FY23', period: '第2期', revenue: 5.50,  operating: 0.93, ordinary: 0.26, netIncome: 0.13, depreciation: 2.22, interest: 0.85, units: 16, realCF: 2.35,  fcf: -4.80, ordinaryRate: 4.7 },
-        { year: 'FY24', period: '第3期', revenue: 13.04, operating: 2.28, ordinary: 0.39, netIncome: 0.23, depreciation: 5.47, interest: 1.97, units: 25, realCF: 5.70,  fcf: -4.33, ordinaryRate: 3.0 },
-        { year: 'FY25', period: '第4期', revenue: 25.90, operating: 5.38, ordinary: 1.30, netIncome: 0.94, depreciation: 11.09, interest: 4.66, units: 41, realCF: 12.03, fcf: -3.31, ordinaryRate: 5.0 },
+        { year: 'FY22', period: '第1期', revenue: 3.33,  operating: 0.54, ordinary: 0.28, netIncome: 0.15, depreciation: 1.62, interest: 0.63, units: 8,  realCF: 1.77,  fcf: 0.47, ordinaryRate: 8.4 },
+        { year: 'FY23', period: '第2期', revenue: 5.50,  operating: 0.93, ordinary: 0.26, netIncome: 0.13, depreciation: 2.22, interest: 0.85, units: 16, realCF: 2.35,  fcf: 0.74, ordinaryRate: 4.7 },
+        { year: 'FY24', period: '第3期', revenue: 13.04, operating: 2.28, ordinary: 0.39, netIncome: 0.23, depreciation: 5.47, interest: 1.97, units: 25, realCF: 5.70,  fcf: 2.30, ordinaryRate: 3.0 },
+        { year: 'FY25', period: '第4期', revenue: 25.90, operating: 5.38, ordinary: 1.30, netIncome: 0.94, depreciation: 11.09, interest: 4.66, units: 41, realCF: 12.03, fcf: 8.33, ordinaryRate: 5.0 },
         // ---- 2ND STAGE 予測（FY26〜FY27）----
         // 費用前提: freee全科目準拠。建物維持管理費=売上×5%、広告宣伝費=取得棟×60万+20万、
         //          租税公課=棟×30万、支払報酬料=100万/年、旅費50+通信40+地代20+外注20+諸会費20+交際30+その他20万
