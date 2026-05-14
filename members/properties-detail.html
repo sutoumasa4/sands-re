@@ -983,6 +983,8 @@ function renderSinglePropView(propId) {
         <tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px">間取り</th><td style="padding:6px 8px;font-size:12px">${p.layout}（${p.units}戸）</td></tr>
         <tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px">取得原価</th><td style="padding:6px 8px;font-size:12px;font-weight:700">${fmt.man(p.acquisitionCost)}</td></tr>
         <tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px">鑑定評価額</th><td style="padding:6px 8px;font-size:12px">${p.appraisal ? fmt.man(p.appraisal) : '—'}</td></tr>
+        ${p.bookValueFY25 ? `<tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px">FY25期末簿価</th><td style="padding:6px 8px;font-size:12px">${fmt.man(p.bookValueFY25)}</td></tr>` : ''}
+        ${p.appraisalGainFY25 ? `<tr><th style="text-align:left;padding:6px 8px;color:#64748b;font-size:11px">含み益（鑑定時価−簿価）</th><td style="padding:6px 8px;font-size:12px;font-weight:700;color:#0e8c6c">+${fmt.man(p.appraisalGainFY25)}<span style="font-size:10px;color:#94a3b8;margin-left:6px">※第4期決算書・注記表より</span></td></tr>` : ''}
     `;
 
     // 借入テーブル
