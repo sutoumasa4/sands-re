@@ -65,7 +65,7 @@
       max-width: var(--max-width);
       margin: 0 auto;
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(4, 1fr);
     }
     .kpi-item {
       padding: 40px 24px;
@@ -100,8 +100,8 @@
       margin-top: 4px;
     }
     @media (max-width: 900px) {
-      .kpi-strip-inner { grid-template-columns: repeat(3, 1fr); }
-      .kpi-item:nth-child(3) { border-right: none; }
+      .kpi-strip-inner { grid-template-columns: repeat(2, 1fr); }
+      .kpi-item:nth-child(2) { border-right: none; }
     }
     @media (max-width: 600px) {
       .kpi-strip-inner { grid-template-columns: repeat(2, 1fr); }
@@ -337,6 +337,27 @@
     }
     .footer-nav a:hover { color: rgba(255,255,255,0.7); }
 
+    /* ── Back Bar ── */
+    .back-bar {
+      background: var(--color-bg);
+      border-bottom: 1px solid var(--color-border);
+      padding: 14px 32px;
+    }
+    .back-bar-inner {
+      max-width: var(--max-width);
+      margin: 0 auto;
+    }
+    .back-bar a {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      color: var(--color-text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .back-bar a:hover { color: var(--color-accent); }
+
     /* Two-col layout */
     .two-col {
       display: grid;
@@ -388,7 +409,6 @@
     style="background-image: url('https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1600&q=80'); background-position: center 50%;">
     <div class="page-hero-overlay"></div>
     <div class="container" style="position:relative;z-index:1;">
-      <a href="index.html" class="hero-back-link" style="display:inline-block;color:var(--color-accent-light);font-size:0.85rem;text-decoration:none;margin-bottom:0.75rem;opacity:0.85;">← 関係者専用ページに戻る</a>
       <p class="section-eyebrow" style="color:var(--color-accent-light);">Financial Information</p>
       <h1 class="page-hero-title">財務情報</h1>
       <p class="page-hero-lead">
@@ -397,6 +417,13 @@
       </p>
     </div>
   </section>
+
+  <!-- Back Bar -->
+  <div class="back-bar">
+    <div class="back-bar-inner">
+      <a href="index.html">← 関係者専用ページに戻る</a>
+    </div>
+  </div>
 
   <!-- Disclosure -->
   <div class="disclosure-bar">
@@ -425,10 +452,6 @@
       <div class="kpi-item">
         <div class="kpi-num">98.5<em>%</em></div>
         <div class="kpi-label">稼働率（FY25）</div>
-      </div>
-      <div class="kpi-item">
-        <div class="kpi-num">44,129<em>万</em></div>
-        <div class="kpi-label">長期借入残高</div>
       </div>
     </div>
   </div>
@@ -568,12 +591,6 @@
               <div class="progress-target">目標 35年</div>
             </div>
             <div class="progress-row">
-              <div class="progress-label">自己資本比率（目標 10%）</div>
-              <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:20%"></div></div>
-              <div class="progress-val">2.0%</div>
-              <div class="progress-target">目標 10%</div>
-            </div>
-            <div class="progress-row">
               <div class="progress-label">稼働率</div>
               <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:98.5%"></div></div>
               <div class="progress-val">98.5%</div>
@@ -596,8 +613,9 @@
       <p class="section-eyebrow reveal">Balance Sheet</p>
       <h2 class="section-title reveal reveal-delay-1">貸借対照表（FY25末）</h2>
       <p class="section-lead reveal reveal-delay-2">
-        2026年3月31日現在。総資産5億2,449万円、純資産1,045万円（自己資本比率 2.0%）。
-        役員借入金5,979万円・親族借入金1,200万円を含む、実質自己資本は3.8%水準です。
+        2026年3月31日現在。総資産5億2,449万円、純資産1,045万円。
+        役員借入金5,979万円・親族借入金1,200万円を自己資本相当として算入した
+        実質自己資本比率は15%水準です。
       </p>
       <div class="bs-grid reveal">
         <div class="bs-pane">
@@ -691,7 +709,7 @@
               <td>りそな銀行</td>
               <td class="num">10,480万</td>
               <td class="num">1.525%</td>
-              <td><span class="rate-badge fixed">固定</span></td>
+              <td><span class="rate-badge variable">変動</span></td>
               <td class="num">457,446円</td>
               <td class="num">約29年4ヶ月</td>
               <td>元金均等</td>
@@ -736,21 +754,16 @@
           <div class="card-box">
             <div class="card-box-title">取引金融機関 ポリシー</div>
             <div style="font-size:0.88rem;color:var(--color-text-muted);line-height:1.9;">
-              <p style="margin-bottom:12px">
-                物件ごとに金融機関を分散し、特定行への集中リスクを抑制しています。
-                現在の取引行は りそな銀行・横浜銀行・スルガ銀行・川崎信金・かながわ信金の5行です。
-              </p>
               <p>
-                中期的には、スルガ銀行借入（変動 2.25%）の低金利へのリファイナンスと、
-                横浜銀行集中（全体の46%）の分散を検討します。
+                物件ごとに金融機関を分散し、長期的な取引関係を重視しています。
+                現在の取引行は りそな銀行・横浜銀行・スルガ銀行・川崎信金・かながわ信金の5行です。
               </p>
             </div>
           </div>
           <div class="card-box">
             <div class="card-box-title">財務指標（参考）</div>
             <table class="loan-table">
-              <tr><td>自己資本比率</td><td class="num" style="font-weight:600">2.0%</td></tr>
-              <tr><td>実質自己資本比率（役員借入含む）</td><td class="num" style="font-weight:600">3.8%</td></tr>
+              <tr><td>実質自己資本比率（役員・親族借入算入）</td><td class="num" style="font-weight:600">15%</td></tr>
               <tr><td>LTV（長期借入金 ÷ 取得原価合計）</td><td class="num" style="font-weight:600">89.7%</td></tr>
               <tr><td>債務償還年数（FY25）</td><td class="num" style="font-weight:600">36.6年</td></tr>
               <tr><td>加重平均金利</td><td class="num" style="font-weight:600">1.64%</td></tr>
@@ -790,8 +803,8 @@
             <div class="roadmap-item">
               <div class="roadmap-dot"></div>
               <div class="roadmap-stage">3rd Stage ／ FY28〜</div>
-              <div class="roadmap-title">ポートフォリオ最適化と自己資本比率10%</div>
-              <div class="roadmap-body">規模拡大を継続しつつ、物件売却によるポートフォリオ入れ替えも視野に。自己資本比率10%の達成を目指します。</div>
+              <div class="roadmap-title">ポートフォリオ最適化と財務基盤強化</div>
+              <div class="roadmap-body">規模拡大を継続しつつ、物件売却によるポートフォリオ入れ替えも視野に、財務基盤のさらなる強化を進めます。</div>
             </div>
           </div>
         </div>
@@ -817,11 +830,6 @@
                   <td>債務償還年数</td>
                   <td class="num">36.6年</td>
                   <td class="num" style="font-weight:700;color:var(--color-accent)">35年以内</td>
-                </tr>
-                <tr>
-                  <td>自己資本比率</td>
-                  <td class="num">2.0%</td>
-                  <td class="num" style="font-weight:700;color:var(--color-accent)">10%（FY30目標）</td>
                 </tr>
               </tbody>
             </table>
