@@ -302,19 +302,29 @@
   <script src="../assets/js/main.js"></script>
   <script>
     const CORRECT_PASSWORD = 'sands2026';
+    const AUTH_KEY = 'sandsAuth';
+
+    function unlock() {
+      document.getElementById('authBox').style.display = 'none';
+      document.getElementById('pagesBlock').style.display = 'block';
+      document.getElementById('docsBox').style.display = 'block';
+    }
 
     function checkPassword() {
       const input = document.getElementById('passwordInput').value;
       if (input === CORRECT_PASSWORD) {
-        document.getElementById('authBox').style.display = 'none';
-        document.getElementById('pagesBlock').style.display = 'block';
-        document.getElementById('docsBox').style.display = 'block';
+        try { sessionStorage.setItem(AUTH_KEY, 'ok'); } catch (e) {}
+        unlock();
       } else {
         document.getElementById('errorMsg').style.display = 'block';
         document.getElementById('passwordInput').value = '';
         document.getElementById('passwordInput').focus();
       }
     }
+
+    try {
+      if (sessionStorage.getItem(AUTH_KEY) === 'ok') unlock();
+    } catch (e) {}
 
     document.getElementById('passwordInput').addEventListener('keypress', e => {
       if (e.key === 'Enter') checkPassword();
