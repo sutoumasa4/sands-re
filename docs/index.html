@@ -12,9 +12,10 @@
       background: var(--color-bg-light);
       min-height: 60vh;
       display: flex;
-      align-items: flex-start;
-      justify-content: center;
+      flex-direction: column;
+      align-items: center;
       padding: 64px 24px 80px;
+      gap: 32px;
     }
     .docs-box {
       background: #fff;
@@ -121,8 +122,59 @@
       text-decoration: none;
     }
     .back-link:hover { color: var(--color-primary); }
+    /* 関係者専用ページ：ボックス外カード */
+    .pages-block { width: 100%; max-width: 560px; }
+    .pages-block-label {
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      color: var(--color-accent);
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+    .pages-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .page-card {
+      display: block;
+      padding: 24px 20px;
+      background: #fff;
+      border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 8px;
+      text-decoration: none;
+      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+    .page-card:hover {
+      border-color: var(--color-accent);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    }
+    .page-card-tag {
+      display: block;
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      color: var(--color-accent);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .page-card-title {
+      font-family: var(--font-serif);
+      font-size: 1.1rem;
+      font-weight: 300;
+      color: var(--color-primary);
+      margin-bottom: 6px;
+    }
+    .page-card-desc {
+      font-size: 0.78rem;
+      color: var(--color-text-light);
+      line-height: 1.7;
+    }
     @media (max-width: 600px) {
       .docs-box { padding: 32px 24px; }
+      .pages-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -139,7 +191,7 @@
         <li><a href="../news.html">ニュース</a></li>
         <li><a href="../company.html">会社情報</a></li>
         <li><a href="../contact.html">お問い合わせ</a></li>
-        <li><a href="index.html" class="nav-cta nav-active">資料ダウンロード</a></li>
+        <li><a href="index.html" class="nav-cta nav-active">関係者専用</a></li>
       </ul>
     </nav>
   </header>
@@ -171,27 +223,30 @@
       <p class="pw-note">パスワードをお持ちでない方は、<a href="../contact.html">お問い合わせ</a>よりご連絡ください。</p>
     </div>
 
-    <!-- 認証後：資料一覧 -->
+    <!-- 認証後：ページリンク（ボックス外） -->
+    <div class="pages-block docs-section" id="pagesBlock">
+      <p class="pages-block-label">Pages</p>
+      <div class="pages-grid">
+        <a class="page-card" href="financial.html">
+          <span class="page-card-tag">Financial</span>
+          <div class="page-card-title">財務情報</div>
+          <div class="page-card-desc">業績推移・B/S・借入方針・中期計画</div>
+        </a>
+        <a class="page-card" href="properties.html">
+          <span class="page-card-tag">Properties</span>
+          <div class="page-card-title">物件情報</div>
+          <div class="page-card-desc">保有5棟41戸の概要</div>
+        </a>
+      </div>
+    </div>
+
+    <!-- 認証後：資料ダウンロード -->
     <div class="docs-box docs-section" id="docsBox" style="max-width: 560px;">
       <p class="docs-box-label">Documents</p>
       <h2 class="docs-box-title">資料ダウンロード</h2>
-      <p class="docs-box-desc">Web版の財務情報・物件情報、および各種PDF資料をご用意しています。</p>
+      <p class="docs-box-desc">PDF / ZIP 形式の各種資料をダウンロードいただけます。</p>
 
       <div class="docs-list">
-        <a class="docs-item" href="financial.html">
-          <div>
-            <p class="docs-item-name">財務情報（金融機関の方へ）</p>
-            <p class="docs-item-desc">業績推移・B/S・借入方針・中期計画　<span class="docs-updated">Web</span></p>
-          </div>
-          <span class="docs-download">→ ページ</span>
-        </a>
-        <a class="docs-item" href="properties.html">
-          <div>
-            <p class="docs-item-name">物件情報</p>
-            <p class="docs-item-desc">保有5棟41戸の物件概要　<span class="docs-updated">Web</span></p>
-          </div>
-          <span class="docs-download">→ ページ</span>
-        </a>
         <a class="docs-item" href="files/sands-company-profile.pdf" download>
           <div>
             <p class="docs-item-name">法人プロフィール</p>
@@ -252,6 +307,7 @@
       const input = document.getElementById('passwordInput').value;
       if (input === CORRECT_PASSWORD) {
         document.getElementById('authBox').style.display = 'none';
+        document.getElementById('pagesBlock').style.display = 'block';
         document.getElementById('docsBox').style.display = 'block';
       } else {
         document.getElementById('errorMsg').style.display = 'block';
