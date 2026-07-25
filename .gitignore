@@ -1,0 +1,6 @@
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Obsidian（ローカル作業環境。公開リポに含めない）
+.obsidian/
