@@ -384,6 +384,73 @@
       padding-bottom: 14px;
       border-bottom: 1px solid var(--color-border);
     }
+
+    /* ============================================================
+       スマホ横幅対応（2026-08-30 追加）
+       原則：ページ本体は横スクロールさせない。
+             広い表は「その表だけ」が横スクロールする。
+       ※ assets/css/style.css は触らずこのファイル内で完結させる
+       ============================================================ */
+
+    /* ── 広い表を包む横スクロール枠 ── */
+    .table-scroll {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-x: contain;
+    }
+    /* 枠内で潰れて読めなくならないよう下限を持たせる。
+       ヘッドレスChrome実測の min-content は perf=480px / loan=622px。
+       ただし min-content は数字が折れて詰まりきった状態なので、
+       読める幅として perf=600 / loan=680 を下限に置く */
+    .perf-table.is-wide { min-width: 600px; }
+    .loan-table.is-wide { min-width: 680px; }
+
+    /* ── 「横に動かせる」ことを伝える（UX：迷わせない）──
+       実際にスクロールが発生する幅でだけ出す */
+    .table-scroll-hint {
+      display: none;
+      margin-top: 10px;
+      font-size: 0.72rem;
+      letter-spacing: 0.04em;
+      color: var(--color-text-muted);
+    }
+    @media (max-width: 640px) { .table-scroll-hint { display: block; } }
+    @media (max-width: 744px) { .table-scroll-hint.hint-wide { display: block; } }
+
+    /* ── KPI進捗バー ──
+       1行版は 200+72+80 + gap14x3 = 394px を必ず要求し、
+       flex-shrink:0 のため縮まない。列幅が394pxを割る幅で積む。
+       （.two-col は768px以下で1カラム。769〜960pxの2カラム時も
+         1カラムあたり394pxに届かないためここで一緒に畳む）*/
+    @media (max-width: 960px) {
+      .progress-row {
+        flex-wrap: wrap;
+        column-gap: 10px;
+        row-gap: 6px;
+        margin-bottom: 20px;
+      }
+      .progress-label  { order: 1; width: auto; flex: 1 1 auto; min-width: 0; }
+      .progress-val    { order: 2; width: auto; flex: 0 0 auto; }
+      .progress-bar-bg { order: 3; flex: 0 0 100%; }
+      .progress-target { order: 4; flex: 0 0 100%; }
+    }
+
+    /* ── スマホ：左右の余白を削って本文に幅を戻す ──
+       変更は横方向のみ（縦のリズムは触らない）*/
+    @media (max-width: 640px) {
+      .section      { padding: 112px 20px; }
+      .kpi-strip    { padding: 0 20px; }
+      /* 「52,449万」は実測 114.5px。元の左右余白24pxだと1セルの内寸が
+         375px幅で115px＝残0.5pxしかなく、360px幅（Android系）では
+         KPIストリップが9px溢れる。余白だけ詰めて余裕を確保する
+         （文字サイズは変えない）*/
+      .kpi-item     { padding: 40px 14px; }
+      .bs-pane      { padding: 40px 20px; }
+      .card-box     { padding: 36px 20px; }
+      .roadmap      { padding-left: 20px; }
+      .roadmap-item { padding: 0 0 44px 20px; }
+      .roadmap-dot  { left: -20px; }
+    }
   </style>
 </head>
 <body class="subpage">
@@ -462,7 +529,8 @@
       </p>
 
       <div class="reveal">
-        <table class="perf-table">
+        <div class="table-scroll">
+        <table class="perf-table is-wide">
           <thead>
             <tr>
               <th style="width:160px">項目</th>
@@ -540,6 +608,8 @@
             </tr>
           </tbody>
         </table>
+        </div>
+        <p class="table-scroll-hint">← 横にスクロールできます →</p>
       </div>
 
       <div class="section-divider"></div>
@@ -548,6 +618,7 @@
       <div class="two-col reveal reveal-delay-1">
         <div>
           <h3 style="font-family:var(--font-serif);font-size:1.2rem;font-weight:300;margin-bottom:20px;">FY25 損益ハイライト</h3>
+          <div class="table-scroll">
           <table class="perf-table">
             <tbody>
               <tr><td class="row-head">不動産賃貸収入</td><td class="val">2,579万</td></tr>
@@ -563,6 +634,7 @@
               <tr><td class="row-head">当期純利益</td><td class="val">94万</td></tr>
             </tbody>
           </table>
+          </div>
         </div>
         <div>
           <h3 style="font-family:var(--font-serif);font-size:1.2rem;font-weight:300;margin-bottom:20px;">中期 KPI 進捗</h3>
@@ -655,7 +727,8 @@
       </p>
 
       <div class="reveal">
-        <table class="loan-table">
+        <div class="table-scroll">
+        <table class="loan-table is-wide">
           <thead>
             <tr>
               <th>対象物件</th>
@@ -742,16 +815,20 @@
             </tr>
           </tfoot>
         </table>
+        </div>
+        <p class="table-scroll-hint hint-wide">← 横にスクロールできます →</p>
       </div>
 
       <div style="margin-top:40px;" class="reveal reveal-delay-1">
         <div class="card-box" style="max-width:540px;">
           <div class="card-box-title">財務指標（参考）</div>
+          <div class="table-scroll">
           <table class="loan-table">
             <tr><td>LTV<br><span style="font-size:11px;font-weight:400;color:var(--color-text-muted)">長期借入金 ÷ 取得原価合計（土地・建物）</span></td><td class="num" style="font-weight:600">89.7%</td></tr>
             <tr><td>加重平均金利</td><td class="num" style="font-weight:600">1.64%</td></tr>
             <tr><td>加重平均残存期間</td><td class="num" style="font-weight:600">約31.5年</td></tr>
           </table>
+          </div>
         </div>
       </div>
     </div>
