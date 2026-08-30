@@ -720,7 +720,7 @@ body { cursor: pointer; } /* iOS Safari click fix */
 .page-hero-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.62);
+  background: rgba(0,0,0,0.35);
   z-index: 0;
 }
 
